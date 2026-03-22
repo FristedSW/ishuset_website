@@ -54,6 +54,8 @@ export default function AdminOpeningHours() {
       open_time: field === 'open_time' ? value : day.open_time,
       close_time: field === 'close_time' ? value : day.close_time,
       is_open: field === 'is_open' ? value : day.is_open,
+      is_unknown: field === 'is_unknown' ? value : day.is_unknown,
+      is_estimated: field === 'is_estimated' ? value : day.is_estimated,
       special_message: field === 'special_message' ? value : day.special_message,
     };
 
@@ -86,6 +88,12 @@ export default function AdminOpeningHours() {
                 Lukketid
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ukendt
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estimeret
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Særlig Besked
               </th>
             </tr>
@@ -111,7 +119,7 @@ export default function AdminOpeningHours() {
                     type="time"
                     value={day.open_time}
                     onChange={(e) => handleChange(day.id, 'open_time', e.target.value)}
-                    disabled={!day.is_open}
+                    disabled={!day.is_open || day.is_unknown}
                     className="border rounded px-2 py-1 text-sm disabled:bg-gray-100"
                   />
                 </td>
@@ -120,8 +128,24 @@ export default function AdminOpeningHours() {
                     type="time"
                     value={day.close_time}
                     onChange={(e) => handleChange(day.id, 'close_time', e.target.value)}
-                    disabled={!day.is_open}
+                    disabled={!day.is_open || day.is_unknown}
                     className="border rounded px-2 py-1 text-sm disabled:bg-gray-100"
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={!!day.is_unknown}
+                    onChange={(e) => handleChange(day.id, 'is_unknown', e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={day.is_estimated !== false}
+                    onChange={(e) => handleChange(day.id, 'is_estimated', e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-6 py-4">

@@ -9,6 +9,7 @@ const emptyForm: MediaPostRequest = {
   publish_date: new Date().toISOString(),
   tags: '',
   is_published: true,
+  is_featured: false,
 };
 
 export default function AdminMediaManager() {
@@ -22,9 +23,10 @@ export default function AdminMediaManager() {
     setLoading(true);
     try {
       const data = await mediaAPI.getAll();
-      setPosts(data);
+      setPosts(Array.isArray(data) ? data : []);
     } catch (e: any) {
       setError(e.message);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -67,6 +69,7 @@ export default function AdminMediaManager() {
       publish_date: post.publish_date,
       tags: post.tags || '',
       is_published: post.is_published,
+      is_featured: post.is_featured || false,
     });
     setEditingId(post.id);
   };
@@ -123,6 +126,16 @@ export default function AdminMediaManager() {
               className="mr-2"
             />
             Offentliggjort
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              name="is_featured"
+              checked={form.is_featured || false}
+              onChange={e => setForm({ ...form, is_featured: e.target.checked })}
+              className="mr-2"
+            />
+            Fremhævet på forsiden
           </label>
           <button
             type="submit"

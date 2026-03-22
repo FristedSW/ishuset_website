@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Play, Image } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Image, Play } from 'lucide-react';
 
 const Gallery: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -10,78 +10,52 @@ const Gallery: React.FC = () => {
       id: 1,
       type: 'image',
       title: 'Vores ismaskine',
-      description: 'Hvor magien sker - vores professionelle ismaskine',
-      placeholder: 'Billede af ismaskine'
+      description: 'Hvor magien sker, når dagens is bliver lavet.',
+      placeholder: 'Billede af ismaskine',
     },
     {
       id: 2,
       type: 'image',
       title: 'Friske ingredienser',
-      description: 'Økologiske og friske råvarer hver dag',
-      placeholder: 'Billede af friske ingredienser'
+      description: 'Økologiske og friske råvarer hver dag.',
+      placeholder: 'Billede af friske ingredienser',
     },
     {
       id: 3,
       type: 'image',
       title: 'Vores smage',
-      description: 'En del af vores fantastiske smagsudvalg',
-      placeholder: 'Billede af iskugler'
+      description: 'Et kig på noget af det udvalg, der møder gæsterne.',
+      placeholder: 'Billede af iskugler',
     },
     {
       id: 4,
       type: 'image',
       title: 'Marselisborg Havn',
-      description: 'Vores smukke placering ved havnen',
-      placeholder: 'Billede af havnen'
+      description: 'Vores smukke placering ved havnen.',
+      placeholder: 'Billede af havnen',
     },
     {
       id: 5,
       type: 'video',
       title: 'Bag kulisserne',
-      description: 'Se hvordan vi laver vores is',
-      placeholder: 'Video af isproduktion'
-    }
+      description: 'Et lille indblik i hverdagen hos Ishuset.',
+      placeholder: 'Video af isproduktion',
+    },
   ];
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % galleryItems.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
+  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % galleryItems.length);
+  const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
 
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-6xl mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-            Galleri
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Tag et kig bag kulisserne og se vores passion for is
-          </p>
+    <section className="bg-amber-50 px-4 py-20">
+      <div className="mx-auto max-w-6xl">
+        <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }} className="mb-16 text-center">
+          <h2 className="mb-6 font-serif text-4xl font-bold text-stone-900 md:text-5xl">Galleri</h2>
+          <p className="mx-auto max-w-3xl text-xl text-stone-600">Tag et kig bag kulisserne og se stemningen omkring Ishuset.</p>
         </motion.div>
 
-        {/* Carousel */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="relative"
-        >
-          <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-pink-100 to-yellow-100">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }} className="relative">
+          <div className="relative h-96 overflow-hidden rounded-[2rem] bg-gradient-to-br from-stone-100 to-amber-100 md:h-[500px]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -92,110 +66,53 @@ const Gallery: React.FC = () => {
                 className="absolute inset-0 flex items-center justify-center"
               >
                 <div className="text-center">
-                  <div className="w-32 h-32 bg-white/50 rounded-full mx-auto mb-6 flex items-center justify-center">
+                  <div className="mx-auto mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-white/60">
                     {galleryItems[currentIndex].type === 'video' ? (
-                      <Play className="w-16 h-16 text-pink-600" />
+                      <Play className="h-16 w-16 text-stone-900" />
                     ) : (
-                      <Image className="w-16 h-16 text-pink-600" />
+                      <Image className="h-16 w-16 text-stone-900" />
                     )}
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                    {galleryItems[currentIndex].title}
-                  </h3>
-                  <p className="text-gray-600 max-w-md mx-auto">
-                    {galleryItems[currentIndex].description}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-4 italic">
-                    {galleryItems[currentIndex].placeholder}
-                  </p>
+                  <h3 className="mb-2 text-2xl font-bold text-stone-900">{galleryItems[currentIndex].title}</h3>
+                  <p className="mx-auto max-w-md text-stone-600">{galleryItems[currentIndex].description}</p>
+                  <p className="mt-4 text-sm italic text-stone-500">{galleryItems[currentIndex].placeholder}</p>
                 </div>
               </motion.div>
             </AnimatePresence>
 
-            {/* Navigation buttons */}
-            <button
-              onClick={prevSlide}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all"
-            >
-              <ChevronLeft className="w-6 h-6 text-gray-700" />
+            <button onClick={prevSlide} className="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 shadow-lg transition-all hover:bg-white">
+              <ChevronLeft className="h-6 w-6 text-stone-700" />
             </button>
-            <button
-              onClick={nextSlide}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all"
-            >
-              <ChevronRight className="w-6 h-6 text-gray-700" />
+            <button onClick={nextSlide} className="absolute right-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 shadow-lg transition-all hover:bg-white">
+              <ChevronRight className="h-6 w-6 text-stone-700" />
             </button>
 
-            {/* Indicators */}
-            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
+            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2">
               {galleryItems.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === currentIndex
-                      ? 'bg-white scale-125'
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                />
+                <button key={index} onClick={() => setCurrentIndex(index)} className={`h-3 w-3 rounded-full transition-all ${index === currentIndex ? 'scale-125 bg-white' : 'bg-white/50 hover:bg-white/75'}`} />
               ))}
             </div>
           </div>
         </motion.div>
 
-        {/* Thumbnail navigation */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="mt-8 flex justify-center gap-4 overflow-x-auto pb-4"
-        >
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} viewport={{ once: true }} className="mt-8 flex justify-center gap-4 overflow-x-auto pb-4">
           {galleryItems.map((item, index) => (
             <motion.button
               key={item.id}
-              onClick={() => goToSlide(index)}
+              onClick={() => setCurrentIndex(index)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden transition-all ${
-                index === currentIndex
-                  ? 'ring-4 ring-pink-500'
-                  : 'ring-2 ring-gray-200 hover:ring-pink-300'
-              }`}
+              className={`flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg transition-all ${index === currentIndex ? 'ring-4 ring-stone-900' : 'ring-2 ring-stone-200 hover:ring-stone-400'}`}
             >
-              <div className="w-full h-full bg-gradient-to-br from-pink-100 to-yellow-100 flex items-center justify-center">
-                {item.type === 'video' ? (
-                  <Play className="w-6 h-6 text-pink-600" />
-                ) : (
-                  <Image className="w-6 h-6 text-pink-600" />
-                )}
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 to-amber-100">
+                {item.type === 'video' ? <Play className="h-6 w-6 text-stone-900" /> : <Image className="h-6 w-6 text-stone-900" />}
               </div>
             </motion.button>
           ))}
-        </motion.div>
-
-        {/* Call to action */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
-        >
-          <p className="text-lg text-gray-600 mb-6">
-            Kom forbi og oplev det selv!
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-pink-600 hover:bg-pink-700 text-white font-semibold py-4 px-8 rounded-full text-lg shadow-lg transition-colors"
-          >
-            Besøg os
-          </motion.button>
         </motion.div>
       </div>
     </section>
   );
 };
 
-export default Gallery; 
+export default Gallery;

@@ -1,109 +1,102 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Clock, Users, Phone, Snowflake, Gift, Facebook, MapPin } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Globe, IceCream2, Menu, X } from 'lucide-react';
+import { Locale } from '../services/api';
+import { localeOptions, translate } from '../lib/site';
 
-const Navigation: React.FC = () => {
+interface NavigationProps {
+  locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
+  textLookup: Record<string, Record<string, string>>;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ locale, onLocaleChange, textLookup }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 24);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const navItems = [
-    { name: 'Åbningstider', icon: Clock, href: '#opening-hours' },
-    { name: 'Om os', icon: Users, href: '#about' },
-    { name: 'Kontakt os', icon: Phone, href: '#contact' },
-    { name: 'Lej fryser', icon: Snowflake, href: '#rental' },
-    { name: 'Bestil is til event', icon: Gift, href: '#events' },
-    { name: 'Social Media', icon: Facebook, href: '#social-media' }
+    { name: translate(textLookup, locale, 'nav_opening_hours', 'Opening hours'), href: '#opening-hours' },
+    { name: translate(textLookup, locale, 'nav_about', 'About'), href: '#about' },
+    { name: translate(textLookup, locale, 'nav_flavours', 'Flavours'), href: '#flavours' },
+    { name: translate(textLookup, locale, 'prices_title', 'Prices'), href: '#prices' },
+    { name: translate(textLookup, locale, 'nav_services', 'Services'), href: '#services' },
+    { name: translate(textLookup, locale, 'services_giftcard_title', 'Gift cards'), href: '#gift-cards' },
+    { name: translate(textLookup, locale, 'nav_contact', 'Contact'), href: '#contact' },
   ];
 
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
     setIsOpen(false);
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
-    }`}>
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2"
-          >
-            <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
-              <Snowflake className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-xl text-gray-800">
-              Ishuset
-            </span>
-          </motion.div>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-stone-50/95 shadow-lg backdrop-blur-md' : 'bg-transparent'}`}>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <button onClick={() => scrollToSection('#top')} className="flex items-center gap-3 text-left">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg">
+            <IceCream2 className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="font-serif text-lg font-bold text-stone-900">Ishuset</div>
+            <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Marselisborg</div>
+          </div>
+        </button>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            {navItems.map((item, index) => (
-              <motion.button
-                key={item.name}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => scrollToSection(item.href)}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-pink-600 transition-colors font-medium"
+        <div className="hidden items-center gap-3 md:flex">
+          {navItems.map((item) => (
+            <button
+              key={item.href}
+              onClick={() => scrollToSection(item.href)}
+              className="rounded-full px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-white hover:text-stone-900"
+            >
+              {item.name}
+            </button>
+          ))}
+          <div className="flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 shadow-sm">
+            <Globe className="h-4 w-4 text-stone-500" />
+            {localeOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => onLocaleChange(option.value)}
+                className={`rounded-full px-2 py-1 text-xs font-semibold ${option.value === locale ? 'bg-stone-900 text-white' : 'text-stone-500'}`}
               >
-                <item.icon className="w-4 h-4" />
-                {item.name}
-              </motion.button>
+                {option.label}
+              </button>
             ))}
           </div>
-
-          {/* Mobile menu button */}
-          <motion.button
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </motion.button>
         </div>
+
+        <button onClick={() => setIsOpen((open) => !open)} className="rounded-full bg-white/90 p-2 shadow-sm md:hidden" aria-label="Toggle navigation">
+          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
 
-      {/* Mobile Navigation */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t border-gray-200"
-          >
-            <div className="px-4 py-6 space-y-4">
-              {navItems.map((item, index) => (
-                <motion.button
-                  key={item.name}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => scrollToSection(item.href)}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-lg transition-colors"
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.name}</span>
-                </motion.button>
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="border-t border-stone-200 bg-stone-50 md:hidden">
+            <div className="space-y-2 px-4 py-4">
+              {navItems.map((item) => (
+                <button key={item.href} onClick={() => scrollToSection(item.href)} className="block w-full rounded-2xl bg-white px-4 py-3 text-left text-sm font-medium text-stone-700 shadow-sm">
+                  {item.name}
+                </button>
               ))}
+              <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 shadow-sm">
+                <span className="text-sm font-medium text-stone-500">Language</span>
+                <div className="flex gap-2">
+                  {localeOptions.map((option) => (
+                    <button key={option.value} onClick={() => onLocaleChange(option.value)} className={`rounded-full px-3 py-1 text-xs font-semibold ${option.value === locale ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500'}`}>
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -112,4 +105,4 @@ const Navigation: React.FC = () => {
   );
 };
 
-export default Navigation; 
+export default Navigation;

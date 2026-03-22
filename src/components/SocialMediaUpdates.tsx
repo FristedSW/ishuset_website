@@ -1,48 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { mediaAPI, MediaPost } from '../services/api';
+import { mediaAPI, MediaPost, Locale } from '../services/api';
+import { translate } from '../lib/site';
 
-export default function NewsFeed() {
+interface SocialMediaUpdatesProps {
+  locale: Locale;
+  textLookup: Record<string, Record<string, string>>;
+}
+
+export default function SocialMediaUpdates({ locale, textLookup }: SocialMediaUpdatesProps) {
   const [posts, setPosts] = useState<MediaPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchNews = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Only fetch posts with platform 'news'
-        const data = await mediaAPI.getAll({ platform: 'news', published: true });
-        setPosts(data.filter(post => post.is_published));
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNews();
+    mediaAPI
+      .getAll({ platform: 'news', published: true })
+      .then((items) => {
+        const safeItems = Array.isArray(items) ? items : [];
+        setPosts(
+          safeItems
+            .filter((post) => post.is_published && post.is_featured)
+            .sort((a, b) => new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime())
+            .slice(0, 3)
+        );
+      })
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));
   }, []);
 
+  if (loading || posts.length === 0) {
+    return null;
+  }
+
   return (
-    <section className="max-w-2xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Nyheder & Opdateringer</h2>
-      {loading && <div>Indlæser...</div>}
-      {error && <div className="text-red-600">{error}</div>}
-      {!loading && posts.length === 0 && <div>Ingen opdateringer endnu.</div>}
-      <div className="space-y-6">
-        {posts.map(post => (
-          <div key={post.id} className="bg-white rounded shadow p-4">
-            <div className="flex flex-col gap-2">
-              <h3 className="font-semibold text-lg">{post.title}</h3>
-              <div className="text-sm text-gray-500">{new Date(post.publish_date).toLocaleString()}</div>
-              <div>{post.content}</div>
-              {post.image_url && (
-                <img src={post.image_url} alt="Billede" className="mt-2 max-h-64 rounded" />
-              )}
-            </div>
-          </div>
-        ))}
+    <section className="bg-amber-50 px-4 py-20">
+      <div className="mx-auto max-w-5xl">
+        <h2 className="font-serif text-4xl font-bold text-stone-900">
+          {translate(textLookup, locale, 'news_title', 'Nyheder og opdateringer')}
+        </h2>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          {posts.map((post) => (
+            <article key={post.id} className="rounded-[2rem] bg-white p-6 shadow-sm">
+              <div className="text-xs uppercase tracking-[0.2em] text-stone-400">
+                {new Date(post.publish_date).toLocaleDateString()}
+              </div>
+              <h3 className="mt-3 text-xl font-semibold text-stone-900">{post.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-stone-600">{post.content}</p>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
-} 
+}

@@ -20,7 +20,6 @@ COPY --from=builder /app/config ./config
 COPY --from=builder /app/handlers ./handlers
 COPY --from=builder /app/middleware ./middleware
 COPY --from=builder /app/models ./models
-COPY --from=builder /app/tmp ./tmp
 COPY --from=builder /app/go.mod ./go.mod
 COPY --from=builder /app/go.sum ./go.sum
 EXPOSE 8080

@@ -31,9 +31,6 @@ services:
       JWT_SECRET: ishuset-secret-key-change-in-production
     depends_on:
       - mongodb
-    volumes:
-      - ./backend:/app
-      - /app/tmp
     networks:
       - ishuset-network
 

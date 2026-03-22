@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { textContentAPI, TextContent, TextContentRequest } from '../services/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Locale, textContentAPI, TextContent, TextContentRequest } from '../services/api';
 
 const emptyForm: TextContentRequest = {
   key: '',
   value: '',
   group: '',
+  locale: 'da',
 };
+
+const locales: Locale[] = ['da', 'en', 'de'];
 
 export default function AdminTextContent() {
   const [contents, setContents] = useState<TextContent[]>([]);
@@ -30,13 +33,8 @@ export default function AdminTextContent() {
     fetchContents();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError(null);
     try {
       if (editingId) {
@@ -49,132 +47,124 @@ export default function AdminTextContent() {
       fetchContents();
     } catch (e: any) {
       setError(e.message);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleEdit = (content: TextContent) => {
-    setForm({
-      key: content.key,
-      value: content.value,
-      group: content.group,
-    });
-    setEditingId(content.id);
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Slet dette indhold?')) return;
-    setLoading(true);
-    setError(null);
-    try {
-      await textContentAPI.delete(id);
-      fetchContents();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
+  const grouped = useMemo(() => {
+    const result: Record<string, TextContent[]> = {};
+    for (const content of contents) {
+      if (!result[content.group]) {
+        result[content.group] = [];
+      }
+      result[content.group].push(content);
     }
-  };
-
-  const handleCancel = () => {
-    setForm(emptyForm);
-    setEditingId(null);
-  };
-
-  const groups = Array.from(new Set(contents.map(c => c.group))).sort();
+    return result;
+  }, [contents]);
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Tekst Indhold</h2>
-      {error && <div className="text-red-600 mb-4">{error}</div>}
-      
-      <form onSubmit={handleSubmit} className="space-y-3 bg-white p-4 rounded shadow mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div className="space-y-6">
+      <div>
+        <h2 className="font-serif text-3xl font-bold text-stone-900">Translations</h2>
+        <p className="mt-2 text-sm text-stone-500">Edit the locale-specific text keys used throughout the public website.</p>
+      </div>
+
+      {error && <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div>}
+
+      <form onSubmit={handleSubmit} className="rounded-[2rem] bg-white p-6 shadow-sm">
+        <div className="grid gap-4 md:grid-cols-4">
           <input
             name="key"
             value={form.key}
-            onChange={handleChange}
-            placeholder="Nøgle (f.eks. hero_title)"
-            className="border p-2 rounded"
+            onChange={(e) => setForm({ ...form, key: e.target.value })}
+            placeholder="Key"
+            className="rounded-2xl border border-stone-200 px-4 py-3"
             required
           />
           <input
             name="group"
             value={form.group}
-            onChange={handleChange}
-            placeholder="Gruppe (f.eks. Home, About)"
-            className="border p-2 rounded"
+            onChange={(e) => setForm({ ...form, group: e.target.value })}
+            placeholder="Group"
+            className="rounded-2xl border border-stone-200 px-4 py-3"
             required
           />
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              {editingId ? 'Opdater' : 'Opret'}
-            </button>
-            {editingId && (
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-              >
-                Annuller
-              </button>
-            )}
-          </div>
+          <select
+            name="locale"
+            value={form.locale}
+            onChange={(e) => setForm({ ...form, locale: e.target.value as Locale })}
+            className="rounded-2xl border border-stone-200 px-4 py-3"
+          >
+            {locales.map((locale) => (
+              <option key={locale} value={locale}>
+                {locale.toUpperCase()}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">
+            {editingId ? 'Update' : 'Create'}
+          </button>
         </div>
         <textarea
           name="value"
           value={form.value}
-          onChange={handleChange}
-          placeholder="Indhold"
-          className="w-full border p-2 rounded"
-          rows={3}
+          onChange={(e) => setForm({ ...form, value: e.target.value })}
+          placeholder="Text value"
+          rows={4}
+          className="mt-4 w-full rounded-[1.5rem] border border-stone-200 px-4 py-3"
           required
         />
       </form>
 
-      {loading && <div>Indlæser...</div>}
-      
-      {!loading && contents.length === 0 && (
-        <div className="text-gray-500">Intet indhold endnu.</div>
-      )}
+      {loading && <div className="text-sm text-stone-500">Loading text content...</div>}
 
-      <div className="space-y-6">
-        {groups.map(group => (
-          <div key={group} className="bg-white rounded shadow p-4">
-            <h3 className="text-lg font-semibold mb-3">{group}</h3>
-            <div className="space-y-3">
-              {contents
-                .filter(content => content.group === group)
-                .map(content => (
-                  <div key={content.id} className="border rounded p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="text-sm font-medium text-gray-600">{content.key}</div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(content)}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
-                        >
-                          Rediger
-                        </button>
-                        <button
-                          onClick={() => handleDelete(content.id)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          Slet
-                        </button>
+      <div className="space-y-5">
+        {Object.entries(grouped).map(([group, groupItems]) => (
+          <div key={group} className="rounded-[2rem] bg-white p-6 shadow-sm">
+            <h3 className="text-xl font-semibold text-stone-900">{group}</h3>
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              {groupItems.map((content) => (
+                <div key={content.id} className="rounded-[1.5rem] border border-stone-100 p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.2em] text-stone-400">
+                        {content.locale.toUpperCase()}
                       </div>
+                      <div className="mt-1 font-medium text-stone-900">{content.base_key}</div>
                     </div>
-                    <div className="text-gray-800">{content.value}</div>
+                    <div className="flex gap-2 text-sm">
+                      <button
+                        onClick={() => {
+                          setEditingId(content.id);
+                          setForm({
+                            key: content.base_key,
+                            group: content.group,
+                            locale: content.locale,
+                            value: content.value,
+                          });
+                        }}
+                        className="text-stone-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!window.confirm('Delete this translation?')) return;
+                          await textContentAPI.delete(content.id);
+                          fetchContents();
+                        }}
+                        className="text-rose-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                ))}
+                  <div className="mt-3 text-sm leading-7 text-stone-600">{content.value}</div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
       </div>
     </div>
   );
-} 
+}

@@ -1,26 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { authAPI } from '../services/api';
 import AdminMediaManager from './AdminMediaManager';
 import AdminContactCenter from './AdminContactCenter';
 import AdminOpeningHours from './AdminOpeningHours';
 import AdminTextContent from './AdminTextContent';
+import AdminFlavourManager from './AdminFlavourManager';
+import AdminPriceManager from './AdminPriceManager';
 
-type TabType = 'media' | 'contact' | 'opening-hours' | 'text-content';
+type TabType = 'media' | 'contact' | 'opening-hours' | 'text-content' | 'flavours' | 'prices';
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabType>('media');
+  const [activeTab, setActiveTab] = useState<TabType>('flavours');
   const [loading, setLoading] = useState(true);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const authenticated = authAPI.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      setLoading(false);
-    };
-    checkAuth();
+    setIsAuthenticated(authAPI.isAuthenticated());
+    setLoading(false);
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -40,47 +38,40 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-xl">Indlæser...</div>
-      </div>
-    );
+    return <div className="flex min-h-screen items-center justify-center bg-stone-100">Loading...</div>;
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md w-96">
-          <h1 className="text-2xl font-bold mb-6 text-center">Ishuset Admin</h1>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+      <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4">
+        <div className="w-full max-w-md rounded-[2rem] bg-white p-8 shadow-xl">
+          <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Ishuset</div>
+          <h1 className="mt-3 font-serif text-3xl font-bold text-stone-900">Admin login</h1>
+          <p className="mt-2 text-sm text-stone-500">Default credentials are seeded in the backend for local testing.</p>
+          <form onSubmit={handleLogin} className="mt-6 space-y-4">
+            <label className="block space-y-2">
+              <span className="text-sm font-medium text-stone-700">Email</span>
               <input
                 type="email"
                 value={loginForm.email}
                 onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                className="w-full border p-2 rounded"
+                className="w-full rounded-2xl border border-stone-200 px-4 py-3"
                 required
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
+            </label>
+            <label className="block space-y-2">
+              <span className="text-sm font-medium text-stone-700">Password</span>
               <input
                 type="password"
                 value={loginForm.password}
                 onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                className="w-full border p-2 rounded"
+                className="w-full rounded-2xl border border-stone-200 px-4 py-3"
                 required
               />
-            </div>
-            {loginError && (
-              <div className="text-red-600 text-sm">{loginError}</div>
-            )}
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-            >
-              Log ind
+            </label>
+            {loginError && <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-600">{loginError}</div>}
+            <button type="submit" className="w-full rounded-full bg-stone-900 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-white">
+              Log in
             </button>
           </form>
         </div>
@@ -88,73 +79,48 @@ export default function AdminDashboard() {
     );
   }
 
+  const tabs: { id: TabType; label: string }[] = [
+    { id: 'flavours', label: 'Flavours' },
+    { id: 'prices', label: 'Prices' },
+    { id: 'opening-hours', label: 'Opening hours' },
+    { id: 'text-content', label: 'Translations' },
+    { id: 'contact', label: 'Requests' },
+    { id: 'media', label: 'News' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-semibold">Ishuset Admin Dashboard</h1>
-            <button
-              onClick={handleLogout}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Log ud
-            </button>
+    <div className="min-h-screen bg-stone-100">
+      <header className="border-b border-stone-200 bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5">
+          <div>
+            <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Protected</div>
+            <h1 className="font-serif text-3xl font-bold text-stone-900">Ishuset Admin</h1>
           </div>
+          <button onClick={handleLogout} className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700">
+            Log out
+          </button>
         </div>
       </header>
 
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+      <nav className="border-b border-stone-200 bg-white">
+        <div className="mx-auto flex max-w-7xl gap-3 overflow-x-auto px-4 py-3">
+          {tabs.map((tab) => (
             <button
-              onClick={() => setActiveTab('media')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'media'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                activeTab === tab.id ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600'
               }`}
             >
-              Nyheder & Opdateringer
+              {tab.label}
             </button>
-            <button
-              onClick={() => setActiveTab('contact')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'contact'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Kontakt Beskeder
-            </button>
-            <button
-              onClick={() => setActiveTab('opening-hours')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'opening-hours'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Åbningstider
-            </button>
-            <button
-              onClick={() => setActiveTab('text-content')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'text-content'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Tekst Indhold
-            </button>
-          </div>
+          ))}
         </div>
       </nav>
 
-      {/* Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        {activeTab === 'flavours' && <AdminFlavourManager />}
+        {activeTab === 'prices' && <AdminPriceManager />}
         {activeTab === 'media' && <AdminMediaManager />}
         {activeTab === 'contact' && <AdminContactCenter />}
         {activeTab === 'opening-hours' && <AdminOpeningHours />}
@@ -162,4 +128,4 @@ export default function AdminDashboard() {
       </main>
     </div>
   );
-} 
+}

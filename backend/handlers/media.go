@@ -22,6 +22,7 @@ type MediaPostMongo struct {
 	Comments    int                `bson:"comments" json:"comments"`
 	Shares      int                `bson:"shares" json:"shares"`
 	IsPublished bool               `bson:"is_published" json:"is_published"`
+	IsFeatured  bool               `bson:"is_featured" json:"is_featured"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
 }
@@ -67,6 +68,7 @@ func CreateMediaPost(c *fiber.Ctx) error {
 		PublishDate: req.PublishDate,
 		Tags:        req.Tags,
 		IsPublished: req.IsPublished,
+		IsFeatured:  req.IsFeatured,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
@@ -99,6 +101,7 @@ func UpdateMediaPost(c *fiber.Ctx) error {
 			"publish_date": req.PublishDate,
 			"tags":         req.Tags,
 			"is_published": req.IsPublished,
+			"is_featured":  req.IsFeatured,
 			"updated_at":   time.Now(),
 		},
 	}

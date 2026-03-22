@@ -1,135 +1,104 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Leaf, Coffee, Star } from 'lucide-react';
+import { Heart, Leaf, Sparkles, Waves } from 'lucide-react';
+import { translate } from '../lib/site';
+import { Locale } from '../services/api';
 
-const OurStory: React.FC = () => {
-  const features = [
-    {
-      icon: Heart,
-      title: "Frisklavet is",
-      description: "Hver dag laver vi vores is fra bunden med kærlighed og omhu"
-    },
-    {
-      icon: Leaf,
-      title: "Økologiske ingredienser",
-      description: "Vi bruger kun de bedste økologiske og friske råvarer"
-    },
-    {
-      icon: Coffee,
-      title: "Italiensk inspiration",
-      description: "Autentiske italienske opskrifter med dansk twist"
-    },
-    {
-      icon: Star,
-      title: "Bedste is i Østjylland",
-      description: "Vores gæster siger det - og vi er stolte af det!"
-    }
-  ];
+interface OurStoryProps {
+  locale: Locale;
+  textLookup: Record<string, Record<string, string>>;
+}
+
+const featureCopy = {
+  da: [
+    { title: 'Frisklavet', description: 'Vi holder fokus på smag, tekstur og gode råvarer hver dag.' },
+    { title: 'Håndværk', description: 'Små detaljer og gode opskrifter gør en stor forskel i hver kugle.' },
+    { title: 'Ved havnen', description: 'Stemningen omkring Marselisborg Havn er en vigtig del af oplevelsen.' },
+    { title: 'Tilbagevendende gæster', description: 'Vi vil være et sted man har lyst til at besøge igen og igen.' },
+  ],
+  en: [
+    { title: 'Freshly made', description: 'We focus on flavour, texture, and quality ingredients every day.' },
+    { title: 'Flexible V1 setup', description: 'Texts, opening hours, and flavours can be updated from the admin panel.' },
+    { title: 'Events and requests', description: 'Guests can send requests without anything being booked automatically.' },
+    { title: 'Harbour atmosphere', description: 'The website should feel like Marselisborg Harbour.' },
+  ],
+  de: [
+    { title: 'Frisch gemacht', description: 'Wir achten taeglich auf Geschmack, Textur und gute Zutaten.' },
+    { title: 'Flexibles V1-Setup', description: 'Texte, Oeffnungszeiten und Sorten lassen sich im Adminbereich pflegen.' },
+    { title: 'Events und Anfragen', description: 'Gaeste senden Anfragen, ohne dass automatisch gebucht wird.' },
+    { title: 'Hafenatmosphaere', description: 'Die Website soll das Gefuehl von Marselisborg Hafen vermitteln.' },
+  ],
+};
+
+const icons = [Heart, Leaf, Sparkles, Waves];
+
+const OurStory: React.FC<OurStoryProps> = ({ locale, textLookup }) => {
+  const items = featureCopy[locale];
 
   return (
-    <section id="about" className="py-20 bg-white">
-      <div className="max-w-6xl mx-auto px-4">
+    <section id="about" className="bg-amber-50 px-4 py-20">
+      <div className="mx-auto max-w-6xl">
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="mb-14 max-w-3xl"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-            Vores Historie
+          <h2 className="font-serif text-4xl font-bold text-stone-900 md:text-5xl">
+            {translate(textLookup, locale, 'about_title', 'Our story')}
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Fra en lille drøm om at skabe den perfekte is til en virkelighed 
-            der bringer glæde til Marselisborg Havn
+          <p className="mt-5 text-lg leading-8 text-stone-600">
+            {translate(
+              textLookup,
+              locale,
+              'about_subtitle',
+              'Homemade ice cream, quality ingredients, and a place people return to.'
+            )}
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-          {/* Story text */}
+        <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
+            className="rounded-[2rem] bg-stone-900 p-8 text-white shadow-xl"
           >
-            <h3 className="text-3xl font-bold text-gray-800 mb-6">
-              Hjemmelavet med kærlighed
+            <div className="text-xs uppercase tracking-[0.4em] text-amber-300">Ishuset</div>
+            <h3 className="mt-4 font-serif text-3xl">
+              {translate(textLookup, locale, 'about_heading', 'Homemade with care')}
             </h3>
-            <div className="space-y-4 text-lg text-gray-600">
-              <p>
-                Hos Ishuset Marselisborg Havn starter hver dag med en ny chance 
-                for at skabe noget helt særligt. Vi bruger kun de fineste 
-                økologiske ingredienser og følger traditionelle italienske 
-                metoder for at sikre den perfekte smag og konsistens.
-              </p>
-              <p>
-                Vores is er ikke bare dessert - det er en oplevelse. Fra 
-                den første bid til den sidste, arbejder vi hårdt for at 
-                give dig noget at huske. Det er derfor vi kalder os 
-                "Bedste is i Østjylland".
-              </p>
-              <p>
-                Kom forbi og smag forskellen. Vi har åbent når solen skinner 
-                og vinden blæser - præcis som det skal være.
-              </p>
+            <div className="mt-6 space-y-4 text-base leading-8 text-stone-300">
+              <p>{translate(textLookup, locale, 'about_body_1', 'At Ishuset we work with classic flavours, seasonal favourites, and ingredients we are proud of.')}</p>
+              <p>{translate(textLookup, locale, 'about_body_2', 'We want event requests and daily website updates to stay simple for both guests and staff.')}</p>
             </div>
           </motion.div>
 
-          {/* Decorative image placeholder */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            <div className="bg-gradient-to-br from-pink-100 to-yellow-100 rounded-2xl p-8 h-96 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-pink-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Coffee className="w-12 h-12 text-pink-600" />
-                </div>
-                <p className="text-gray-600 italic">
-                  "Billede af vores ismaskine og friske ingredienser"
-                </p>
-              </div>
-            </div>
-          </motion.div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {items.map((feature, index) => {
+              const Icon = icons[index];
+              return (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="rounded-[1.75rem] bg-gradient-to-br from-sky-100 to-cyan-100 p-6 shadow-sm"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-sm">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h4 className="text-xl font-semibold text-stone-900">{feature.title}</h4>
+                  <p className="mt-3 text-sm leading-7 text-stone-600">{feature.description}</p>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
-
-        {/* Features grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
-        >
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -5 }}
-              className="text-center p-6 rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 hover:shadow-lg transition-all"
-            >
-              <div className="w-16 h-16 bg-pink-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <feature.icon className="w-8 h-8 text-pink-600" />
-              </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-3">
-                {feature.title}
-              </h4>
-              <p className="text-gray-600">
-                {feature.description}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
     </section>
   );
 };
 
-export default OurStory; 
+export default OurStory;

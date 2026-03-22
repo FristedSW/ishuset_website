@@ -36,6 +36,8 @@ func UpdateOpeningHours(c *fiber.Ctx) error {
 	hours.OpenTime = req.OpenTime
 	hours.CloseTime = req.CloseTime
 	hours.IsOpen = req.IsOpen
+	hours.IsUnknown = req.IsUnknown
+	hours.IsEstimated = req.IsEstimated
 	hours.SpecialMessage = req.SpecialMessage
 	if err := config.DB.Save(&hours).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{

@@ -16,15 +16,24 @@ type User struct {
 
 // ContactMessage represents incoming contact form submissions
 type ContactMessage struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Name      string    `json:"name" gorm:"not null"`
-	Email     string    `json:"email" gorm:"not null"`
-	Phone     string    `json:"phone"`
-	Service   string    `json:"service"`
-	Message   string    `json:"message" gorm:"not null"`
-	Status    string    `json:"status" gorm:"default:'new'"` // new, read, replied
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID            uint       `json:"id" gorm:"primaryKey"`
+	Name          string     `json:"name" gorm:"not null"`
+	Email         string     `json:"email" gorm:"not null"`
+	Phone         string     `json:"phone"`
+	Service       string     `json:"service"`
+	EventType     string     `json:"event_type"`
+	RecipientName string     `json:"recipient_name"`
+	GiftAmount    string     `json:"gift_amount"`
+	PreferredFrom *time.Time `json:"preferred_from"`
+	PreferredTo   *time.Time `json:"preferred_to"`
+	PreferredDate *time.Time `json:"preferred_date"`
+	GuestCount    int        `json:"guest_count"`
+	AllowEmail    bool       `json:"allow_email" gorm:"default:true"`
+	AllowPhone    bool       `json:"allow_phone" gorm:"default:false"`
+	Message       string     `json:"message" gorm:"not null"`
+	Status        string     `json:"status" gorm:"default:'new'"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
 }
 
 // MediaPost represents social media posts
@@ -40,6 +49,7 @@ type MediaPost struct {
 	Comments    int       `json:"comments" gorm:"default:0"`
 	Shares      int       `json:"shares" gorm:"default:0"`
 	IsPublished bool      `json:"is_published" gorm:"default:false"`
+	IsFeatured  bool      `json:"is_featured" gorm:"default:false"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -51,6 +61,8 @@ type OpeningHours struct {
 	OpenTime      string    `json:"open_time" gorm:"not null"`
 	CloseTime     string    `json:"close_time" gorm:"not null"`
 	IsOpen        bool      `json:"is_open" gorm:"default:true"`
+	IsUnknown     bool      `json:"is_unknown" gorm:"default:false"`
+	IsEstimated   bool      `json:"is_estimated" gorm:"default:true"`
 	SpecialMessage string   `json:"special_message"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
@@ -58,10 +70,45 @@ type OpeningHours struct {
 
 // TextContent represents dynamic text content for the frontend
 type TextContent struct {
-	ID    uint   `json:"id" gorm:"primaryKey"`
-	Key   string `json:"key" gorm:"unique;not null"`   // e.g., hero_title, about_description
-	Value string `json:"value" gorm:"not null"`        // actual text content
-	Group string `json:"group" gorm:"not null"`        // e.g., Home, About, Contact
+	ID      uint   `json:"id" gorm:"primaryKey"`
+	Key     string `json:"key" gorm:"unique;not null"`
+	Value   string `json:"value" gorm:"not null"`
+	Group   string `json:"group" gorm:"not null"`
+	Locale  string `json:"locale" gorm:"-"`
+	BaseKey string `json:"base_key" gorm:"-"`
+}
+
+// Flavour represents a single flavour entry with translations.
+type Flavour struct {
+	ID            uint      `json:"id" gorm:"primaryKey"`
+	Slug          string    `json:"slug" gorm:"unique;not null"`
+	NameDA        string    `json:"name_da" gorm:"not null"`
+	NameEN        string    `json:"name_en"`
+	NameDE        string    `json:"name_de"`
+	DescriptionDA string    `json:"description_da" gorm:"not null"`
+	DescriptionEN string    `json:"description_en"`
+	DescriptionDE string    `json:"description_de"`
+	Category      string    `json:"category" gorm:"not null;default:'milk-based'"`
+	ImageURL      string    `json:"image_url"`
+	SortOrder     int       `json:"sort_order" gorm:"default:0"`
+	IsActive      bool      `json:"is_active" gorm:"default:true"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+// PriceItem represents editable scoop prices for the menu overlay.
+type PriceItem struct {
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	Key         string    `json:"key" gorm:"unique;not null"`
+	LabelDA     string    `json:"label_da" gorm:"not null"`
+	LabelEN     string    `json:"label_en"`
+	LabelDE     string    `json:"label_de"`
+	Description string    `json:"description"`
+	Price       string    `json:"price" gorm:"not null"`
+	SortOrder   int       `json:"sort_order" gorm:"default:0"`
+	IsActive    bool      `json:"is_active" gorm:"default:true"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // LoginRequest represents login form data
@@ -78,11 +125,20 @@ type LoginResponse struct {
 
 // ContactRequest represents contact form data
 type ContactRequest struct {
-	Name    string `json:"name" validate:"required"`
-	Email   string `json:"email" validate:"required,email"`
-	Phone   string `json:"phone"`
-	Service string `json:"service"`
-	Message string `json:"message" validate:"required"`
+	Name          string `json:"name" validate:"required"`
+	Email         string `json:"email" validate:"required,email"`
+	Phone         string `json:"phone"`
+	Service       string `json:"service"`
+	EventType     string `json:"event_type"`
+	RecipientName string `json:"recipient_name"`
+	GiftAmount    string `json:"gift_amount"`
+	PreferredFrom string `json:"preferred_from"`
+	PreferredTo   string `json:"preferred_to"`
+	PreferredDate string `json:"preferred_date"`
+	GuestCount    int    `json:"guest_count"`
+	AllowEmail    bool   `json:"allow_email"`
+	AllowPhone    bool   `json:"allow_phone"`
+	Message       string `json:"message" validate:"required"`
 }
 
 // MediaPostRequest represents media post creation/update
@@ -94,6 +150,7 @@ type MediaPostRequest struct {
 	PublishDate time.Time `json:"publish_date"`
 	Tags        string    `json:"tags"`
 	IsPublished bool      `json:"is_published"`
+	IsFeatured  bool      `json:"is_featured"`
 }
 
 // OpeningHoursRequest represents opening hours creation/update
@@ -102,12 +159,42 @@ type OpeningHoursRequest struct {
 	OpenTime       string `json:"open_time" validate:"required"`
 	CloseTime      string `json:"close_time" validate:"required"`
 	IsOpen         bool   `json:"is_open"`
+	IsUnknown      bool   `json:"is_unknown"`
+	IsEstimated    bool   `json:"is_estimated"`
 	SpecialMessage string `json:"special_message"`
 }
 
 // TextContentRequest represents text content creation/update
 type TextContentRequest struct {
-	Key   string `json:"key" validate:"required"`
-	Value string `json:"value" validate:"required"`
-	Group string `json:"group" validate:"required"`
-} 
+	Key    string `json:"key" validate:"required"`
+	Value  string `json:"value" validate:"required"`
+	Group  string `json:"group" validate:"required"`
+	Locale string `json:"locale" validate:"required"`
+}
+
+// FlavourRequest represents flavour creation/update.
+type FlavourRequest struct {
+	Slug          string `json:"slug" validate:"required"`
+	NameDA        string `json:"name_da" validate:"required"`
+	NameEN        string `json:"name_en"`
+	NameDE        string `json:"name_de"`
+	DescriptionDA string `json:"description_da" validate:"required"`
+	DescriptionEN string `json:"description_en"`
+	DescriptionDE string `json:"description_de"`
+	Category      string `json:"category" validate:"required"`
+	ImageURL      string `json:"image_url"`
+	SortOrder     int    `json:"sort_order"`
+	IsActive      bool   `json:"is_active"`
+}
+
+// PriceItemRequest represents price item creation/update.
+type PriceItemRequest struct {
+	Key         string `json:"key" validate:"required"`
+	LabelDA     string `json:"label_da" validate:"required"`
+	LabelEN     string `json:"label_en"`
+	LabelDE     string `json:"label_de"`
+	Description string `json:"description"`
+	Price       string `json:"price" validate:"required"`
+	SortOrder   int    `json:"sort_order"`
+	IsActive    bool   `json:"is_active"`
+}
