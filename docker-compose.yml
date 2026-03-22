@@ -1,0 +1,66 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: ishuset-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: ishuset
+    volumes:
+      - mongodb_data:/data/db
+      - ./backend/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - ishuset-network
+
+  # Go Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ishuset-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/ishuset?authSource=admin
+      PORT: 8080
+      JWT_SECRET: ishuset-secret-key-change-in-production
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend:/app
+      - /app/tmp
+    networks:
+      - ishuset-network
+
+  # React Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: ishuset-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:8080/api
+      CHOKIDAR_USEPOLLING: true
+    depends_on:
+      - backend
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - /app/node_modules
+    networks:
+      - ishuset-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  ishuset-network:
+    driver: bridge 

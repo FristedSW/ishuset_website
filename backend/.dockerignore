@@ -1,0 +1,7 @@
+*.db
+*.sqlite
+.env
+.git
+.gitignore
+README.md
+*.log 
