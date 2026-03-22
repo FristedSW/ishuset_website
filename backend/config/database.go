@@ -32,6 +32,10 @@ func InitDB() {
 		&models.TextContent{},
 		&models.Flavour{},
 		&models.PriceItem{},
+		&models.GiftCard{},
+		&models.MediaAsset{},
+		&models.GalleryItem{},
+		&models.FreezerBooking{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
@@ -90,6 +94,7 @@ func seedInitialData() {
 	seedTextContent()
 	seedFlavours()
 	seedPrices()
+	seedGiftCards()
 }
 
 func seedDefaultAdmin() {
@@ -158,6 +163,8 @@ func seedTextContent() {
 		{"da", "Flavours", "flavours_filter_milk", "Mælkebaseret"},
 		{"da", "Flavours", "flavours_filter_vegan", "Sorbet"},
 		{"da", "Flavours", "flavours_cta", "Kom forbi og smag dagens udvalg"},
+		{"da", "Gallery", "gallery_title", "Galleri"},
+		{"da", "Gallery", "gallery_subtitle", "Et kig på stemningen, iskiosken og billederne fra Ishuset."},
 		{"da", "Prices", "prices_title", "Priser"},
 		{"da", "Prices", "prices_subtitle", "Alle kugler har samme grundpris uanset smag."},
 		{"da", "Services", "services_title", "Lej fryser"},
@@ -195,6 +202,8 @@ func seedTextContent() {
 		{"en", "Flavours", "flavours_filter_milk", "Milk-based"},
 		{"en", "Flavours", "flavours_filter_vegan", "Sorbet"},
 		{"en", "Flavours", "flavours_cta", "Visit us and taste today's selection"},
+		{"en", "Gallery", "gallery_title", "Gallery"},
+		{"en", "Gallery", "gallery_subtitle", "A look at the atmosphere, the shop and the moments around Ishuset."},
 		{"en", "Prices", "prices_title", "Prices"},
 		{"en", "Prices", "prices_subtitle", "Each scoop has the same base price regardless of flavour."},
 		{"en", "Services", "services_title", "Rent a freezer"},
@@ -232,6 +241,8 @@ func seedTextContent() {
 		{"de", "Flavours", "flavours_filter_milk", "Milchbasiert"},
 		{"de", "Flavours", "flavours_filter_vegan", "Sorbet"},
 		{"de", "Flavours", "flavours_cta", "Besuchen Sie uns und probieren Sie die Auswahl des Tages"},
+		{"de", "Gallery", "gallery_title", "Galerie"},
+		{"de", "Gallery", "gallery_subtitle", "Ein Einblick in die Stimmung, die Eisbude und die Bilder rund um Ishuset."},
 		{"de", "Prices", "prices_title", "Preise"},
 		{"de", "Prices", "prices_subtitle", "Jede Kugel hat denselben Grundpreis unabhaengig von der Sorte."},
 		{"de", "Services", "services_title", "Kuehltruhe mieten"},
@@ -372,6 +383,14 @@ func seedPrices() {
 		if err := DB.Create(&item).Error; err != nil {
 			log.Printf("Failed to seed price item %s: %v", item.Key, err)
 		}
+	}
+}
+
+func seedGiftCards() {
+	var count int64
+	DB.Model(&models.GiftCard{}).Count(&count)
+	if count > 0 {
+		return
 	}
 }
 

@@ -27,6 +27,13 @@ const PriceSection: React.FC<PriceSectionProps> = ({ locale, textLookup, prices 
           <p className="mx-auto mt-4 max-w-3xl text-lg text-stone-600">
             {translate(textLookup, locale, 'prices_subtitle', 'Each scoop has the same base price regardless of flavour.')}
           </p>
+          <p className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-stone-500">
+            {locale === 'da'
+              ? 'Vi har også kaffe og kolde drikke.'
+              : locale === 'de'
+                ? 'Wir haben auch Kaffee und kalte Getränke.'
+                : 'We also have coffee and cold drinks.'}
+          </p>
         </motion.div>
 
         <div className="grid gap-5 md:grid-cols-3">

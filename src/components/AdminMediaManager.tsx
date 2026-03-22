@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { mediaAPI, MediaPost, MediaPostRequest } from '../services/api';
+import { mediaAPI, MediaAsset, mediaAssetAPI, MediaPost, MediaPostRequest, resolveMediaUrl } from '../services/api';
 
 const emptyForm: MediaPostRequest = {
   title: '',
@@ -18,6 +18,7 @@ export default function AdminMediaManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [assets, setAssets] = useState<MediaAsset[]>([]);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -34,6 +35,7 @@ export default function AdminMediaManager() {
 
   useEffect(() => {
     fetchPosts();
+    mediaAssetAPI.getAll().then((data) => setAssets(Array.isArray(data) ? data : [])).catch(() => setAssets([]));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -116,6 +118,22 @@ export default function AdminMediaManager() {
           placeholder="Billede-URL (valgfrit)"
           className="w-full border p-2 rounded"
         />
+        <select
+          value=""
+          onChange={(e) => {
+            const asset = assets.find((entry) => entry.id === Number(e.target.value));
+            if (!asset) return;
+            setForm((current) => ({ ...current, image_url: asset.file_url }));
+          }}
+          className="w-full border p-2 rounded"
+        >
+          <option value="">Vælg fra mediebibliotek...</option>
+          {assets.map((asset) => (
+            <option key={asset.id} value={asset.id}>
+              {asset.title}
+            </option>
+          ))}
+        </select>
         <div className="flex items-center gap-2">
           <label className="flex items-center">
             <input
@@ -176,7 +194,7 @@ export default function AdminMediaManager() {
             <div className="text-sm text-gray-500 mb-2">{new Date(post.publish_date).toLocaleString()}</div>
             <div>{post.content}</div>
             {post.image_url && (
-              <img src={post.image_url} alt="Billede" className="mt-2 max-h-48 rounded" />
+              <img src={resolveMediaUrl(post.image_url)} alt="Billede" className="mt-2 max-h-48 rounded" />
             )}
             {!post.is_published && <div className="text-xs text-yellow-600 mt-2">(Ikke offentliggjort)</div>}
           </div>

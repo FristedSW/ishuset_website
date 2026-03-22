@@ -29,8 +29,15 @@ services:
       MONGODB_URI: mongodb://admin:password123@mongodb:27017/ishuset?authSource=admin
       PORT: 8080
       JWT_SECRET: ishuset-secret-key-change-in-production
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     depends_on:
       - mongodb
+    volumes:
+      - backend_uploads:/app/uploads
     networks:
       - ishuset-network
 
@@ -57,6 +64,7 @@ services:
 
 volumes:
   mongodb_data:
+  backend_uploads:
 
 networks:
   ishuset-network:

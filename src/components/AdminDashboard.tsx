@@ -1,32 +1,59 @@
 import React, { useEffect, useState } from 'react';
-import { authAPI } from '../services/api';
+import { AdminUser, authAPI } from '../services/api';
 import AdminMediaManager from './AdminMediaManager';
 import AdminContactCenter from './AdminContactCenter';
 import AdminOpeningHours from './AdminOpeningHours';
 import AdminTextContent from './AdminTextContent';
 import AdminFlavourManager from './AdminFlavourManager';
 import AdminPriceManager from './AdminPriceManager';
+import AdminGiftCards from './AdminGiftCards';
+import AdminMediaLibrary from './AdminMediaLibrary';
+import AdminGalleryManager from './AdminGalleryManager';
+import AdminFreezerCalendar from './AdminFreezerCalendar';
+import AdminUsers from './AdminUsers';
 
-type TabType = 'media' | 'contact' | 'opening-hours' | 'text-content' | 'flavours' | 'prices';
+type TabType =
+  | 'media-library'
+  | 'gallery'
+  | 'calendar'
+  | 'media'
+  | 'contact'
+  | 'opening-hours'
+  | 'text-content'
+  | 'flavours'
+  | 'prices'
+  | 'gift-cards'
+  | 'users';
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('flavours');
+  const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsAuthenticated(authAPI.isAuthenticated());
+    setCurrentUser(authAPI.getCurrentUser());
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    if (currentUser.role === 'staff' && activeTab !== 'gift-cards' && activeTab !== 'opening-hours') {
+      setActiveTab('gift-cards');
+    }
+  }, [activeTab, currentUser]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
     try {
-      await authAPI.login(loginForm);
+      const response = await authAPI.login(loginForm);
       setIsAuthenticated(true);
+      setCurrentUser(response.user);
+      setActiveTab(response.user.role === 'staff' ? 'gift-cards' : 'flavours');
     } catch (error: any) {
       setLoginError(error.message);
     }
@@ -35,6 +62,7 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     authAPI.logout();
     setIsAuthenticated(false);
+    setCurrentUser(null);
   };
 
   if (loading) {
@@ -79,14 +107,26 @@ export default function AdminDashboard() {
     );
   }
 
-  const tabs: { id: TabType; label: string }[] = [
-    { id: 'flavours', label: 'Flavours' },
-    { id: 'prices', label: 'Prices' },
-    { id: 'opening-hours', label: 'Opening hours' },
-    { id: 'text-content', label: 'Translations' },
-    { id: 'contact', label: 'Requests' },
-    { id: 'media', label: 'News' },
-  ];
+  const isAdmin = currentUser?.role === 'admin';
+
+  const tabs: { id: TabType; label: string }[] = isAdmin
+    ? [
+        { id: 'media-library', label: 'Media library' },
+        { id: 'gallery', label: 'Gallery' },
+        { id: 'calendar', label: 'Calendar' },
+        { id: 'flavours', label: 'Flavours' },
+        { id: 'prices', label: 'Prices' },
+        { id: 'gift-cards', label: 'Gift cards' },
+        { id: 'opening-hours', label: 'Opening hours' },
+        { id: 'text-content', label: 'Translations' },
+        { id: 'contact', label: 'Requests' },
+        { id: 'media', label: 'News' },
+        { id: 'users', label: 'Users' },
+      ]
+    : [
+        { id: 'gift-cards', label: 'Gift cards' },
+        { id: 'opening-hours', label: 'Opening hours' },
+      ];
 
   return (
     <div className="min-h-screen bg-stone-100">
@@ -95,6 +135,7 @@ export default function AdminDashboard() {
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Protected</div>
             <h1 className="font-serif text-3xl font-bold text-stone-900">Ishuset Admin</h1>
+            {currentUser && <p className="mt-1 text-sm text-stone-500">{currentUser.email} | {currentUser.role}</p>}
           </div>
           <button onClick={handleLogout} className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700">
             Log out
@@ -119,12 +160,17 @@ export default function AdminDashboard() {
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
+        {activeTab === 'media-library' && <AdminMediaLibrary />}
+        {activeTab === 'gallery' && <AdminGalleryManager />}
+        {activeTab === 'calendar' && <AdminFreezerCalendar />}
         {activeTab === 'flavours' && <AdminFlavourManager />}
         {activeTab === 'prices' && <AdminPriceManager />}
+        {activeTab === 'gift-cards' && <AdminGiftCards />}
         {activeTab === 'media' && <AdminMediaManager />}
         {activeTab === 'contact' && <AdminContactCenter />}
         {activeTab === 'opening-hours' && <AdminOpeningHours />}
         {activeTab === 'text-content' && <AdminTextContent />}
+        {activeTab === 'users' && <AdminUsers />}
       </main>
     </div>
   );

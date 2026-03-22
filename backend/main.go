@@ -21,15 +21,18 @@ func main() {
 		AllowHeaders:  "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:  "GET,POST,PUT,PATCH,DELETE,OPTIONS",
 	}))
+	app.Static("/uploads", "./uploads")
 
 	// Public routes
 	app.Post("/api/login", handlers.Login)
 	app.Post("/api/contact", handlers.SubmitContact)
+	app.Post("/api/gift-cards", handlers.CreateGiftCard)
 	app.Get("/api/text", handlers.GetTextContent)
 	app.Get("/api/opening-hours", handlers.GetOpeningHours)
 	app.Get("/api/media", handlers.GetMediaPosts)
 	app.Get("/api/flavours", handlers.GetFlavours)
 	app.Get("/api/prices", handlers.GetPriceItems)
+	app.Get("/api/gallery", handlers.GetGalleryItems)
 
 	// Admin/staff protected routes
 	admin := app.Group("/api/admin", middleware.AuthMiddleware())
@@ -37,15 +40,29 @@ func main() {
 	// Contact center (admin only)
 	admin.Get("/contact", middleware.RequireRole("admin"), handlers.GetContactMessages)
 	admin.Patch("/contact/:id/status", middleware.RequireRole("admin"), handlers.UpdateContactStatus)
+	admin.Post("/contact/:id/accept", middleware.RequireRole("admin"), handlers.AcceptContactMessage)
 	admin.Delete("/contact/:id", middleware.RequireRole("admin"), handlers.DeleteContactMessage)
+	admin.Get("/freezer-bookings", middleware.RequireRole("admin"), handlers.GetFreezerBookings)
+	admin.Get("/gift-cards", handlers.GetGiftCards)
+	admin.Post("/gift-cards", handlers.CreateGiftCardFromAdmin)
+	admin.Put("/gift-cards/:id", handlers.UpdateGiftCard)
 
 	// Media manager (admin only)
 	admin.Post("/media", middleware.RequireRole("admin"), handlers.CreateMediaPost)
 	admin.Put("/media/:id", middleware.RequireRole("admin"), handlers.UpdateMediaPost)
 	admin.Delete("/media/:id", middleware.RequireRole("admin"), handlers.DeleteMediaPost)
+	admin.Get("/media-assets", middleware.RequireRole("admin"), handlers.GetMediaAssets)
+	admin.Post("/media-assets/upload", middleware.RequireRole("admin"), handlers.UploadMediaFile)
+	admin.Post("/media-assets", middleware.RequireRole("admin"), handlers.CreateMediaAsset)
+	admin.Put("/media-assets/:id", middleware.RequireRole("admin"), handlers.UpdateMediaAsset)
+	admin.Delete("/media-assets/:id", middleware.RequireRole("admin"), handlers.DeleteMediaAsset)
+	admin.Get("/gallery", middleware.RequireRole("admin"), handlers.GetGalleryItems)
+	admin.Post("/gallery", middleware.RequireRole("admin"), handlers.CreateGalleryItem)
+	admin.Put("/gallery/:id", middleware.RequireRole("admin"), handlers.UpdateGalleryItem)
+	admin.Delete("/gallery/:id", middleware.RequireRole("admin"), handlers.DeleteGalleryItem)
 
 	// Opening hours manager
-	admin.Put("/opening-hours/:id", middleware.RequireRole("admin"), handlers.UpdateOpeningHours)
+	admin.Put("/opening-hours/:id", handlers.UpdateOpeningHours)
 
 	// Text content manager (admin only)
 	admin.Post("/text", middleware.RequireRole("admin"), handlers.CreateTextContent)
@@ -63,6 +80,10 @@ func main() {
 	admin.Post("/prices", middleware.RequireRole("admin"), handlers.CreatePriceItem)
 	admin.Put("/prices/:id", middleware.RequireRole("admin"), handlers.UpdatePriceItem)
 	admin.Delete("/prices/:id", middleware.RequireRole("admin"), handlers.DeletePriceItem)
+
+	// User manager (admin only)
+	admin.Get("/users", middleware.RequireRole("admin"), handlers.GetUsers)
+	admin.Post("/users", middleware.RequireRole("admin"), handlers.CreateUser)
 
 	port := os.Getenv("PORT")
 	if port == "" {

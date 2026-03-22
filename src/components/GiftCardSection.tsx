@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Gift } from 'lucide-react';
 import { formCopy, translate } from '../lib/site';
-import { contactAPI, Locale } from '../services/api';
+import { giftCardAPI, Locale } from '../services/api';
 
 interface GiftCardSectionProps {
   locale: Locale;
@@ -14,6 +14,7 @@ const emptyGiftCardForm = {
   email: '',
   phone: '',
   recipient_name: '',
+  recipient_email: '',
   gift_amount: '',
   allow_email: true,
   allow_phone: false,
@@ -47,11 +48,27 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
 
     setSubmitting(true);
     try {
-      await contactAPI.submit({
-        ...form,
-        service: 'gift-card',
-      });
-      setFeedback(copy.success);
+      const response = await giftCardAPI.create(form);
+      const card = response.card;
+      const baseMessage =
+        locale === 'da'
+          ? `Gavekortet blev oprettet. Kode: ${card.code}.`
+          : locale === 'de'
+            ? `Der Gutschein wurde erstellt. Code: ${card.code}.`
+            : `Gift card created. Code: ${card.code}.`;
+      const emailMessage = response.email_sent
+        ? locale === 'da'
+          ? ' Mailen blev sendt til modtageren.'
+          : locale === 'de'
+            ? ' Die E-Mail wurde an den Empfänger gesendet.'
+            : ' The email was sent to the recipient.'
+        : locale === 'da'
+          ? ' Mailen er ikke sendt endnu.'
+          : locale === 'de'
+            ? ' Die E-Mail wurde noch nicht gesendet.'
+            : ' The email has not been sent yet.';
+      const warning = response.warning ? ` ${response.warning}` : '';
+      setFeedback(`${baseMessage}${emailMessage}${warning}`);
       setForm(emptyGiftCardForm);
     } catch (submitError: any) {
       setError(submitError.message || 'Failed to send request');
@@ -98,7 +115,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
               </label>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-2 text-sm font-medium">
                 <span>{copy.phone}</span>
                 <input name="phone" value={form.phone} onChange={handleChange} className="w-full rounded-2xl border border-stone-200 px-4 py-3" />
@@ -106,6 +123,13 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
               <label className="space-y-2 text-sm font-medium">
                 <span>{locale === 'da' ? 'Modtagernavn' : locale === 'de' ? 'Empfängername' : 'Recipient name'}</span>
                 <input name="recipient_name" value={form.recipient_name} onChange={handleChange} required className="w-full rounded-2xl border border-stone-200 px-4 py-3" />
+              </label>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-2 text-sm font-medium">
+                <span>{locale === 'da' ? 'Modtager-email' : locale === 'de' ? 'Empfänger-E-Mail' : 'Recipient email'}</span>
+                <input type="email" name="recipient_email" value={form.recipient_email} onChange={handleChange} required className="w-full rounded-2xl border border-stone-200 px-4 py-3" />
               </label>
               <label className="space-y-2 text-sm font-medium">
                 <span>{locale === 'da' ? 'Beløb' : locale === 'de' ? 'Betrag' : 'Amount'}</span>
@@ -132,9 +156,9 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
             {error && <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div>}
             {feedback && <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{feedback}</div>}
 
-              <button type="submit" disabled={submitting} className="w-full rounded-full bg-stone-900 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-70">
+            <button type="submit" disabled={submitting} className="w-full rounded-full bg-stone-900 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-70">
               {submitting ? '...' : locale === 'da' ? 'Send gavekortforespørgsel' : locale === 'de' ? 'Gutscheinanfrage senden' : 'Send gift card request'}
-              </button>
+            </button>
           </form>
         </div>
       </div>

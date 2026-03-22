@@ -14,6 +14,7 @@ RUN CGO_ENABLED=1 go build -v -o main .
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates sqlite-libs
 WORKDIR /app
+RUN mkdir -p /app/uploads
 COPY --from=builder /app/main ./main
 COPY --from=builder /app/init-mongo.js ./init-mongo.js
 COPY --from=builder /app/config ./config

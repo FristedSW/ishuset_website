@@ -141,13 +141,14 @@ func DeleteContactMessage(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := config.DB.Delete(&message).Error; err != nil {
+	message.Status = "deleted"
+	if err := config.DB.Save(&message).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"error": "Failed to delete contact message",
+			"error": "Failed to mark contact message as deleted",
 		})
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "Contact message deleted successfully",
+		"message": "Contact message marked as deleted",
 	})
 }

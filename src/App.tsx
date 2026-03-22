@@ -61,7 +61,7 @@ function MainWebsite() {
       <OurStory locale={locale} textLookup={textLookup} />
       <FlavourMenu locale={locale} textLookup={textLookup} flavours={flavours} />
       <PriceSection locale={locale} textLookup={textLookup} prices={prices} />
-      <Gallery />
+      <Gallery locale={locale} textLookup={textLookup} />
       <SocialMediaUpdates locale={locale} textLookup={textLookup} />
       <SpecialServices locale={locale} textLookup={textLookup} />
       <GiftCardSection locale={locale} textLookup={textLookup} />

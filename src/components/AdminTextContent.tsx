@@ -9,6 +9,7 @@ const emptyForm: TextContentRequest = {
 };
 
 const locales: Locale[] = ['da', 'en', 'de'];
+const defaultGroups = ['Home', 'Navigation', 'About', 'Flavours', 'Prices', 'Services', 'Contact', 'OpeningHours', 'News'];
 
 export default function AdminTextContent() {
   const [contents, setContents] = useState<TextContent[]>([]);
@@ -61,6 +62,11 @@ export default function AdminTextContent() {
     return result;
   }, [contents]);
 
+  const groups = useMemo(() => {
+    const dynamicGroups = contents.map((content) => content.group);
+    return Array.from(new Set([...defaultGroups, ...dynamicGroups])).sort();
+  }, [contents]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -80,14 +86,20 @@ export default function AdminTextContent() {
             className="rounded-2xl border border-stone-200 px-4 py-3"
             required
           />
-          <input
+          <select
             name="group"
             value={form.group}
             onChange={(e) => setForm({ ...form, group: e.target.value })}
-            placeholder="Group"
             className="rounded-2xl border border-stone-200 px-4 py-3"
             required
-          />
+          >
+            <option value="">Select group</option>
+            {groups.map((group) => (
+              <option key={group} value={group}>
+                {group}
+              </option>
+            ))}
+          </select>
           <select
             name="locale"
             value={form.locale}

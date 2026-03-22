@@ -32,6 +32,7 @@ type ContactMessage struct {
 	AllowPhone    bool       `json:"allow_phone" gorm:"default:false"`
 	Message       string     `json:"message" gorm:"not null"`
 	Status        string     `json:"status" gorm:"default:'new'"`
+	AcceptedAt    *time.Time `json:"accepted_at"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 }
@@ -111,6 +112,69 @@ type PriceItem struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+// GiftCard represents an internal gift card record.
+type GiftCard struct {
+	ID             uint      `json:"id" gorm:"primaryKey"`
+	Code           string    `json:"code" gorm:"unique;not null"`
+	BuyerName      string    `json:"buyer_name" gorm:"not null"`
+	BuyerEmail     string    `json:"buyer_email" gorm:"not null"`
+	BuyerPhone     string    `json:"buyer_phone"`
+	RecipientName  string    `json:"recipient_name" gorm:"not null"`
+	RecipientEmail string    `json:"recipient_email" gorm:"not null"`
+	OriginalAmount string    `json:"original_amount" gorm:"not null"`
+	BalanceAmount  string    `json:"balance_amount" gorm:"not null"`
+	Message        string    `json:"message"`
+	AllowEmail     bool      `json:"allow_email" gorm:"default:true"`
+	AllowPhone     bool      `json:"allow_phone" gorm:"default:false"`
+	Status         string    `json:"status" gorm:"default:'active'"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+// MediaAsset represents an uploaded reusable media item.
+type MediaAsset struct {
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	Title       string    `json:"title" gorm:"not null"`
+	Description string    `json:"description"`
+	AltText     string    `json:"alt_text"`
+	FileURL     string    `json:"file_url" gorm:"not null"`
+	AssetType   string    `json:"asset_type" gorm:"default:'image'"`
+	Source      string    `json:"source" gorm:"default:'local'"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// GalleryItem represents an item shown in the public gallery.
+type GalleryItem struct {
+	ID          uint      `json:"id" gorm:"primaryKey"`
+	Title       string    `json:"title" gorm:"not null"`
+	Description string    `json:"description"`
+	AltText     string    `json:"alt_text"`
+	ImageURL    string    `json:"image_url" gorm:"not null"`
+	SortOrder   int       `json:"sort_order" gorm:"default:0"`
+	IsActive    bool      `json:"is_active" gorm:"default:true"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// FreezerBooking represents an accepted freezer rental in the admin calendar.
+type FreezerBooking struct {
+	ID               uint       `json:"id" gorm:"primaryKey"`
+	ContactMessageID *uint      `json:"contact_message_id"`
+	CustomerName     string     `json:"customer_name" gorm:"not null"`
+	CustomerEmail    string     `json:"customer_email" gorm:"not null"`
+	CustomerPhone    string     `json:"customer_phone"`
+	Occasion         string     `json:"occasion"`
+	FreezerSize      string     `json:"freezer_size" gorm:"not null;default:'small'"`
+	StartDate        time.Time  `json:"start_date" gorm:"not null"`
+	EndDate          time.Time  `json:"end_date" gorm:"not null"`
+	Notes            string     `json:"notes"`
+	Status           string     `json:"status" gorm:"default:'accepted'"`
+	AcceptedAt       time.Time  `json:"accepted_at"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
+}
+
 // LoginRequest represents login form data
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
@@ -121,6 +185,13 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Token string `json:"token"`
 	User  User   `json:"user"`
+}
+
+// UserCreateRequest represents admin creation of a new user.
+type UserCreateRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+	Role     string `json:"role" validate:"required"`
 }
 
 // ContactRequest represents contact form data
@@ -197,4 +268,50 @@ type PriceItemRequest struct {
 	Price       string `json:"price" validate:"required"`
 	SortOrder   int    `json:"sort_order"`
 	IsActive    bool   `json:"is_active"`
+}
+
+// GiftCardRequest represents gift card creation from the public form.
+type GiftCardRequest struct {
+	Name          string `json:"name" validate:"required"`
+	Email         string `json:"email" validate:"required,email"`
+	Phone         string `json:"phone"`
+	RecipientName string `json:"recipient_name" validate:"required"`
+	RecipientEmail string `json:"recipient_email" validate:"required,email"`
+	GiftAmount    string `json:"gift_amount" validate:"required"`
+	AllowEmail    bool   `json:"allow_email"`
+	AllowPhone    bool   `json:"allow_phone"`
+	Message       string `json:"message"`
+}
+
+// GiftCardUpdateRequest represents admin updates to a gift card.
+type GiftCardUpdateRequest struct {
+	BalanceAmount string `json:"balance_amount" validate:"required"`
+	Status        string `json:"status"`
+}
+
+// MediaAssetRequest represents media library item creation/update.
+type MediaAssetRequest struct {
+	Title       string `json:"title" validate:"required"`
+	Description string `json:"description"`
+	AltText     string `json:"alt_text"`
+	FileURL     string `json:"file_url" validate:"required"`
+	AssetType   string `json:"asset_type"`
+	Source      string `json:"source"`
+}
+
+// GalleryItemRequest represents gallery item creation/update.
+type GalleryItemRequest struct {
+	Title       string `json:"title" validate:"required"`
+	Description string `json:"description"`
+	AltText     string `json:"alt_text"`
+	ImageURL    string `json:"image_url" validate:"required"`
+	SortOrder   int    `json:"sort_order"`
+	IsActive    bool   `json:"is_active"`
+}
+
+// AcceptContactRequest represents the admin accepting a freezer request.
+type AcceptContactRequest struct {
+	StartDate   string `json:"start_date"`
+	EndDate     string `json:"end_date"`
+	FreezerSize string `json:"freezer_size"`
 }
