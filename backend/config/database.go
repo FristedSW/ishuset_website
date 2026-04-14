@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"ishuset-backend/models"
@@ -21,6 +22,12 @@ func InitDB() {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		dbPath = "ishuset.db"
+	}
+
+	if dir := filepath.Dir(dbPath); dir != "." && dir != "" {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			log.Fatal("Failed to create database directory:", err)
+		}
 	}
 
 	DB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
