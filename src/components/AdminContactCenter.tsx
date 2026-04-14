@@ -207,7 +207,7 @@ export default function AdminContactCenter() {
                   lang="en-GB"
                   value={manualBooking.start_date}
                   onChange={(e) => setManualBooking((current) => ({ ...current, start_date: e.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
+                  className="hide-native-date-icon w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
                   required
                 />
                 <button
@@ -226,7 +226,7 @@ export default function AdminContactCenter() {
                   lang="en-GB"
                   value={manualBooking.end_date}
                   onChange={(e) => setManualBooking((current) => ({ ...current, end_date: e.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
+                  className="hide-native-date-icon w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
                   required
                 />
                 <button

@@ -10,7 +10,7 @@ interface SpecialServicesProps {
 }
 
 const freezerOccasionOptions = {
-  da: ['Foedselsdag', 'Firmaevent', 'Bryllup', 'Andet'],
+  da: ['F\u00f8dselsdag', 'Firmaevent', 'Bryllup', 'Andet'],
   en: ['Birthday', 'Company event', 'Wedding', 'Other'],
   de: ['Geburtstag', 'Firmenevent', 'Hochzeit', 'Sonstiges'],
 };
@@ -25,8 +25,8 @@ const priceEstimates = {
     { label: 'Large freezer', value: 'From 1,600 DKK / day' },
   ],
   de: [
-    { label: 'Kleine Kuehltruhe', value: 'Ab 800 DKK / Tag' },
-    { label: 'Grosse Kuehltruhe', value: 'Ab 1.600 DKK / Tag' },
+    { label: 'Kleine K\u00fchltruhe', value: 'Ab 800 DKK / Tag' },
+    { label: 'Gro\u00dfe K\u00fchltruhe', value: 'Ab 1.600 DKK / Tag' },
   ],
 };
 
@@ -127,7 +127,7 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
         <div className="space-y-8">
           <div className="rounded-[2rem] bg-white p-6 shadow-sm">
             <h3 className="text-2xl font-semibold text-stone-900">
-              {locale === 'da' ? 'Prisoverslag' : locale === 'de' ? 'Preisuebersicht' : 'Estimated pricing'}
+              {locale === 'da' ? 'Prisoverslag' : locale === 'de' ? 'Preis\u00fcbersicht' : 'Estimated pricing'}
             </h3>
             <div className="mt-5 space-y-3">
               {priceEstimates[locale].map((item) => (
@@ -145,9 +145,9 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
             </h3>
             <p className="mt-3 text-sm leading-7 text-stone-500">
               {locale === 'da'
-                ? 'Send en generel forespoergsel med datoer og arrangement. Vi vaelger selv lille eller stor fryser i admin.'
+                ? 'Send en generel foresp\u00f8rgsel med datoer og arrangement. Vi v\u00e6lger selv lille eller stor fryser i admin.'
                 : locale === 'de'
-                  ? 'Senden Sie eine allgemeine Anfrage mit Datum und Anlass. Im Adminbereich waehlen wir dann selbst kleine oder grosse Kuehltruhe.'
+                  ? 'Senden Sie eine allgemeine Anfrage mit Datum und Anlass. Im Adminbereich w\u00e4hlen wir dann selbst kleine oder gro\u00dfe K\u00fchltruhe.'
                   : 'Send a general request with dates and event details. We will choose the small or large freezer in the admin panel.'}
             </p>
 
@@ -192,7 +192,7 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
                       name="preferred_from"
                       value={freezerForm.preferred_from}
                       onChange={handleChange}
-                      className="w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
+                      className="hide-native-date-icon w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
                     />
                     <button
                       type="button"
@@ -214,7 +214,7 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
                       name="preferred_to"
                       value={freezerForm.preferred_to}
                       onChange={handleChange}
-                      className="w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
+                      className="hide-native-date-icon w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
                     />
                     <button
                       type="button"
