@@ -7,6 +7,7 @@ toolchain go1.23.11
 require (
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/stripe/stripe-go/v84 v84.4.0
 	go.mongodb.org/mongo-driver v1.17.4
 	golang.org/x/crypto v0.39.0
 	gorm.io/driver/sqlite v1.6.0

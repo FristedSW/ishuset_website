@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"ishuset-backend/config"
 	"ishuset-backend/models"
 )
 
@@ -43,6 +44,10 @@ func buildGiftCardEmail(card models.GiftCard) string {
 }
 
 func sendGiftCardEmail(card models.GiftCard) (bool, error) {
+	if card.EmailSent {
+		return true, nil
+	}
+
 	host, port, username, password, from := smtpConfig()
 	if host == "" || port == "" || username == "" || password == "" || from == "" {
 		return false, nil
@@ -66,6 +71,10 @@ func sendGiftCardEmail(card models.GiftCard) (bool, error) {
 	if err != nil {
 		log.Printf("Failed to send gift card email for %s: %v", card.Code, err)
 		return false, err
+	}
+	card.EmailSent = true
+	if err := config.DB.Model(&models.GiftCard{}).Where("id = ?", card.ID).Update("email_sent", true).Error; err != nil {
+		log.Printf("Failed to mark gift card email as sent for %s: %v", card.Code, err)
 	}
 	return true, nil
 }

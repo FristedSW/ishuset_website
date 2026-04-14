@@ -55,6 +55,96 @@ func GetFreezerBookings(c *fiber.Ctx) error {
 	return c.JSON(bookings)
 }
 
+// CreateFreezerBooking creates a manual freezer booking directly from the admin panel.
+func CreateFreezerBooking(c *fiber.Ctx) error {
+	var req models.FreezerBookingCreateRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if req.FreezerSize != "small" && req.FreezerSize != "large" {
+		return c.Status(400).JSON(fiber.Map{"error": "Freezer size must be small or large"})
+	}
+	if req.PaymentStatus == "" {
+		req.PaymentStatus = "unpaid"
+	}
+	if req.PaymentStatus != "paid" && req.PaymentStatus != "unpaid" {
+		return c.Status(400).JSON(fiber.Map{"error": "Payment status must be paid or unpaid"})
+	}
+
+	startDate, err := parseBookingDate(req.StartDate)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid start date"})
+	}
+	endDate, err := parseBookingDate(req.EndDate)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid end date"})
+	}
+	startDate, endDate = normalizeBookingRange(startDate, endDate)
+	if endDate.Before(startDate) {
+		return c.Status(400).JSON(fiber.Map{"error": "End date cannot be earlier than start date"})
+	}
+
+	hasConflict, err := bookingHasConflict(startDate, endDate, req.FreezerSize, 0)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to check freezer availability"})
+	}
+	if hasConflict {
+		return c.Status(409).JSON(fiber.Map{"error": "This period is already taken in the freezer calendar"})
+	}
+
+	booking := models.FreezerBooking{
+		CustomerName:  req.CustomerName,
+		CustomerEmail: req.CustomerEmail,
+		CustomerPhone: req.CustomerPhone,
+		Occasion:      req.Occasion,
+		FreezerSize:   req.FreezerSize,
+		StartDate:     startDate,
+		EndDate:       endDate,
+		Notes:         req.Notes,
+		Price:         req.Price,
+		Status:        "accepted",
+		PaymentStatus: req.PaymentStatus,
+		AcceptedAt:    time.Now(),
+	}
+
+	if err := config.DB.Create(&booking).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to create freezer booking"})
+	}
+
+	return c.JSON(booking)
+}
+
+// UpdateFreezerBooking lets admin update notes and payment state on a freezer booking.
+func UpdateFreezerBooking(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	var req models.FreezerBookingUpdateRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	if req.PaymentStatus != "" && req.PaymentStatus != "paid" && req.PaymentStatus != "unpaid" {
+		return c.Status(400).JSON(fiber.Map{"error": "Payment status must be paid or unpaid"})
+	}
+
+	var booking models.FreezerBooking
+	if err := config.DB.First(&booking, id).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Freezer booking not found"})
+	}
+
+	booking.Notes = req.Notes
+	booking.Price = req.Price
+	if req.PaymentStatus != "" {
+		booking.PaymentStatus = req.PaymentStatus
+	}
+
+	if err := config.DB.Save(&booking).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update freezer booking"})
+	}
+
+	return c.JSON(booking)
+}
+
 // AcceptContactMessage turns a freezer request into a calendar booking if there is no conflict.
 func AcceptContactMessage(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -131,7 +221,9 @@ func AcceptContactMessage(c *fiber.Ctx) error {
 		StartDate:        startDate,
 		EndDate:          endDate,
 		Notes:            message.Message,
+		Price:            "",
 		Status:           "accepted",
+		PaymentStatus:    "unpaid",
 		AcceptedAt:       acceptedAt,
 	}
 

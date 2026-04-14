@@ -24,6 +24,7 @@ export default function AdminFlavourManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingRow, setSavingRow] = useState<number | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const fetchFlavours = async () => {
     setLoading(true);
@@ -187,6 +188,37 @@ export default function AdminFlavourManager() {
               </option>
             ))}
           </select>
+          <label className="mt-4 block text-sm font-medium text-stone-700">Or upload a new image directly</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="mt-2 block w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setUploadingImage(true);
+              setError(null);
+              try {
+                const upload = await mediaAssetAPI.upload(file);
+                const createdAsset = await mediaAssetAPI.create({
+                  title: file.name.replace(/\.[^.]+$/, ''),
+                  description: '',
+                  alt_text: '',
+                  file_url: upload.file_url,
+                  asset_type: 'image',
+                  source: 'local',
+                });
+                setAssets((current) => [createdAsset, ...current]);
+                setForm((current) => ({ ...current, image_url: createdAsset.file_url }));
+              } catch (e: any) {
+                setError(e.message);
+              } finally {
+                setUploadingImage(false);
+                e.target.value = '';
+              }
+            }}
+          />
+          {uploadingImage && <div className="mt-2 text-sm text-stone-500">Uploading image...</div>}
         </div>
 
         {form.image_url && (
@@ -202,7 +234,7 @@ export default function AdminFlavourManager() {
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <textarea name="description_da" value={form.description_da} onChange={handleChange} placeholder="Description (DA)" className="min-h-28 rounded-[1.5rem] border border-stone-200 px-4 py-3" required />
+          <textarea name="description_da" value={form.description_da} onChange={handleChange} placeholder="Description (DA)" className="min-h-28 rounded-[1.5rem] border border-stone-200 px-4 py-3" />
           <textarea name="description_en" value={form.description_en} onChange={handleChange} placeholder="Description (EN)" className="min-h-28 rounded-[1.5rem] border border-stone-200 px-4 py-3" />
           <textarea name="description_de" value={form.description_de} onChange={handleChange} placeholder="Description (DE)" className="min-h-28 rounded-[1.5rem] border border-stone-200 px-4 py-3" />
         </div>

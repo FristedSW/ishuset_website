@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Mail, MapPin, Phone } from 'lucide-react';
-import { dayLabels, getTodayHours, translate } from '../lib/site';
+import { dayLabels, getTodayHours, isCurrentlyOpen, translate } from '../lib/site';
 import { Locale, OpeningHours } from '../services/api';
 
 interface ContactMapProps {
@@ -12,6 +12,7 @@ interface ContactMapProps {
 
 const ContactMap: React.FC<ContactMapProps> = ({ locale, textLookup, hours }) => {
   const today = getTodayHours(hours);
+  const isOpenNow = isCurrentlyOpen(hours);
 
   return (
     <section id="contact" className="bg-amber-50 px-4 py-20">
@@ -81,10 +82,17 @@ const ContactMap: React.FC<ContactMapProps> = ({ locale, textLookup, hours }) =>
           <div className="rounded-[2rem] bg-amber-50 p-8 shadow-sm">
             <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Today</div>
             <div className="mt-3 text-2xl font-semibold text-stone-900">
-              {today?.is_open ? `${today.open_time} - ${today.close_time}` : translate(textLookup, locale, 'opening_closed', 'Closed')}
+              {today?.is_open && !today?.is_unknown
+                ? `${today.open_time} - ${today.close_time}`
+                : translate(textLookup, locale, 'opening_closed', 'Closed')}
             </div>
             <div className="mt-2 text-sm text-stone-500">
               {today ? dayLabels[locale][today.day] || today.day : ''}
+            </div>
+            <div className={`mt-2 text-sm font-semibold ${isOpenNow ? 'text-emerald-600' : 'text-rose-500'}`}>
+              {isOpenNow
+                ? translate(textLookup, locale, 'hero_status_open', 'Open now')
+                : translate(textLookup, locale, 'hero_status_closed', 'Closed right now')}
             </div>
             {today?.special_message && (
               <div className="mt-4 rounded-2xl bg-white px-4 py-3 text-sm text-stone-600">{today.special_message}</div>

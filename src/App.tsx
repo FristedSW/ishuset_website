@@ -12,6 +12,7 @@ import AdminDashboard from './components/AdminDashboard';
 import PriceSection from './components/PriceSection';
 import SocialMediaUpdates from './components/SocialMediaUpdates';
 import GiftCardSection from './components/GiftCardSection';
+import GiftCardCheckoutResult from './components/GiftCardCheckoutResult';
 import {
   flavourAPI,
   Flavour,
@@ -76,6 +77,8 @@ function App() {
       <Routes>
         <Route path="/" element={<MainWebsite />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/gift-cards/success" element={<GiftCardCheckoutResult mode="success" />} />
+        <Route path="/gift-cards/cancel" element={<GiftCardCheckoutResult mode="cancel" />} />
       </Routes>
     </Router>
   );

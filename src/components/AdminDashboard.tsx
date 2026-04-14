@@ -9,13 +9,11 @@ import AdminPriceManager from './AdminPriceManager';
 import AdminGiftCards from './AdminGiftCards';
 import AdminMediaLibrary from './AdminMediaLibrary';
 import AdminGalleryManager from './AdminGalleryManager';
-import AdminFreezerCalendar from './AdminFreezerCalendar';
 import AdminUsers from './AdminUsers';
 
 type TabType =
   | 'media-library'
   | 'gallery'
-  | 'calendar'
   | 'media'
   | 'contact'
   | 'opening-hours'
@@ -113,13 +111,12 @@ export default function AdminDashboard() {
     ? [
         { id: 'media-library', label: 'Media library' },
         { id: 'gallery', label: 'Gallery' },
-        { id: 'calendar', label: 'Calendar' },
         { id: 'flavours', label: 'Flavours' },
         { id: 'prices', label: 'Prices' },
         { id: 'gift-cards', label: 'Gift cards' },
         { id: 'opening-hours', label: 'Opening hours' },
         { id: 'text-content', label: 'Translations' },
-        { id: 'contact', label: 'Requests' },
+        { id: 'contact', label: 'Freezer bookings' },
         { id: 'media', label: 'News' },
         { id: 'users', label: 'Users' },
       ]
@@ -162,7 +159,6 @@ export default function AdminDashboard() {
       <main className="mx-auto max-w-7xl px-4 py-8">
         {activeTab === 'media-library' && <AdminMediaLibrary />}
         {activeTab === 'gallery' && <AdminGalleryManager />}
-        {activeTab === 'calendar' && <AdminFreezerCalendar />}
         {activeTab === 'flavours' && <AdminFlavourManager />}
         {activeTab === 'prices' && <AdminPriceManager />}
         {activeTab === 'gift-cards' && <AdminGiftCards />}

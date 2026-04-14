@@ -43,6 +43,8 @@ const emptyFreezerForm = {
   message: '',
 };
 
+const FORMSPREE_REQUEST_URL = process.env.REACT_APP_FORMSPREE_REQUEST_URL || '';
+
 function parseDanishDate(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return '';
@@ -89,12 +91,30 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
 
     setSubmitting(true);
     try {
-      await contactAPI.submit({
+      const payload = {
         ...freezerForm,
         preferred_from: preferredFrom || undefined,
         preferred_to: preferredTo || undefined,
         guest_count: freezerForm.guest_count || undefined,
-      });
+      };
+
+      await contactAPI.submit(payload);
+
+      if (FORMSPREE_REQUEST_URL) {
+        await fetch(FORMSPREE_REQUEST_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            source: 'Ishuset website freezer request',
+            ...payload,
+            locale,
+          }),
+        }).catch(() => null);
+      }
+
       setFeedback(copy.success);
       setFreezerForm(emptyFreezerForm);
     } catch (submitError: any) {

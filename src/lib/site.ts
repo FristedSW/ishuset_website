@@ -133,7 +133,8 @@ export function getFlavourDescription(flavour: Flavour, locale: Locale) {
   return (
     (locale === 'de' && flavour.description_de) ||
     (locale === 'en' && flavour.description_en) ||
-    flavour.description_da
+    flavour.description_da ||
+    ''
   );
 }
 
@@ -149,10 +150,41 @@ export function getFlavourCategoryLabel(
 }
 
 export function getPriceLabel(item: PriceItem, locale: Locale) {
-  return (locale === 'de' && item.label_de) || (locale === 'en' && item.label_en) || item.label_da;
+  return (locale === 'de' && item.label_de) || (locale === 'en' && item.label_en) || item.label_da || '';
 }
 
 export function getTodayHours(hours: OpeningHours[]) {
   const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
   return hours.find((entry) => entry.day === weekday) || hours[0];
+}
+
+function parseTimeToMinutes(value?: string) {
+  if (!value) return null;
+  const parts = value.split(':').map((part) => Number.parseInt(part, 10));
+  if (parts.length < 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) {
+    return null;
+  }
+  return parts[0] * 60 + parts[1];
+}
+
+export function isCurrentlyOpen(hours: OpeningHours[]) {
+  const today = getTodayHours(hours);
+  if (!today || !today.is_open || today.is_unknown) {
+    return false;
+  }
+
+  const openMinutes = parseTimeToMinutes(today.open_time);
+  const closeMinutes = parseTimeToMinutes(today.close_time);
+  if (openMinutes === null || closeMinutes === null) {
+    return today.is_open;
+  }
+
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  if (closeMinutes >= openMinutes) {
+    return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+  }
+
+  return currentMinutes >= openMinutes || currentMinutes < closeMinutes;
 }

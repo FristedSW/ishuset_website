@@ -48,30 +48,17 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
 
     setSubmitting(true);
     try {
-      const response = await giftCardAPI.create(form);
-      const card = response.card;
-      const baseMessage =
+      const response = await giftCardAPI.createCheckoutSession({ ...form, locale });
+      setFeedback(
         locale === 'da'
-          ? `Gavekortet blev oprettet. Kode: ${card.code}.`
+          ? 'Du bliver sendt videre til betaling...'
           : locale === 'de'
-            ? `Der Gutschein wurde erstellt. Code: ${card.code}.`
-            : `Gift card created. Code: ${card.code}.`;
-      const emailMessage = response.email_sent
-        ? locale === 'da'
-          ? ' Mailen blev sendt til modtageren.'
-          : locale === 'de'
-            ? ' Die E-Mail wurde an den Empfänger gesendet.'
-            : ' The email was sent to the recipient.'
-        : locale === 'da'
-          ? ' Mailen er ikke sendt endnu.'
-          : locale === 'de'
-            ? ' Die E-Mail wurde noch nicht gesendet.'
-            : ' The email has not been sent yet.';
-      const warning = response.warning ? ` ${response.warning}` : '';
-      setFeedback(`${baseMessage}${emailMessage}${warning}`);
-      setForm(emptyGiftCardForm);
+            ? 'Sie werden jetzt zur Zahlung weitergeleitet...'
+            : 'Redirecting you to payment...'
+      );
+      window.location.href = response.checkout_url;
     } catch (submitError: any) {
-      setError(submitError.message || 'Failed to send request');
+      setError(submitError.message || 'Failed to start payment');
     } finally {
       setSubmitting(false);
     }
@@ -93,12 +80,11 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
             </h2>
           </div>
           <p className="max-w-3xl text-lg leading-8 text-stone-600">
-            {translate(
-              textLookup,
-              locale,
-              'services_giftcard_body',
-              'Gift cards will come in a later version with amount, recipient name and payment.'
-            )}
+            {locale === 'da'
+              ? 'Betal gavekortet online med kort eller MobilePay. Gavekortet bliver sendt til modtageren, når betalingen er gennemført.'
+              : locale === 'de'
+                ? 'Bezahlen Sie den Gutschein online mit Karte oder MobilePay. Der Gutschein wird nach erfolgreicher Zahlung an den Empfänger gesendet.'
+                : 'Pay for the gift card online with card or MobilePay. The gift card will be sent to the recipient after payment is completed.'}
           </p>
         </motion.div>
 
@@ -157,7 +143,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
             {feedback && <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{feedback}</div>}
 
             <button type="submit" disabled={submitting} className="w-full rounded-full bg-stone-900 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-70">
-              {submitting ? '...' : locale === 'da' ? 'Send gavekortforespørgsel' : locale === 'de' ? 'Gutscheinanfrage senden' : 'Send gift card request'}
+              {submitting ? '...' : locale === 'da' ? 'Gå til betaling' : locale === 'de' ? 'Zur Zahlung' : 'Go to payment'}
             </button>
           </form>
         </div>

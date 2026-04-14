@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Clock3 } from 'lucide-react';
-import { dayLabels, translate } from '../lib/site';
+import { dayLabels, isCurrentlyOpen, translate } from '../lib/site';
 import { Locale, OpeningHours as OpeningHoursType } from '../services/api';
 
 interface OpeningHoursProps {
@@ -10,12 +10,18 @@ interface OpeningHoursProps {
   hours: OpeningHoursType[];
 }
 
-function getWeekDateLabel(dayIndex: number, locale: Locale) {
+function getMondayStart() {
   const today = new Date();
   const jsDay = today.getDay();
   const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
   const monday = new Date(today);
+  monday.setHours(0, 0, 0, 0);
   monday.setDate(today.getDate() + mondayOffset);
+  return monday;
+}
+
+function getWeekDateLabel(dayIndex: number, locale: Locale) {
+  const monday = getMondayStart();
   const target = new Date(monday);
   target.setDate(monday.getDate() + dayIndex);
   return target.toLocaleDateString(locale === 'da' ? 'da-DK' : locale === 'de' ? 'de-DE' : 'en-GB', {
@@ -27,6 +33,19 @@ function getWeekDateLabel(dayIndex: number, locale: Locale) {
 const OpeningHours: React.FC<OpeningHoursProps> = ({ locale, textLookup, hours }) => {
   const todayJs = new Date().getDay();
   const todayIndex = todayJs === 0 ? 6 : todayJs - 1;
+  const openNow = isCurrentlyOpen(hours);
+
+  const orderedHours = useMemo(() => {
+    if (!hours.length) return [];
+    return hours.map((entry, index) => ({
+      ...entry,
+      originalIndex: index,
+    })).sort((a, b) => {
+      const aOffset = (a.originalIndex - todayIndex + 7) % 7;
+      const bOffset = (b.originalIndex - todayIndex + 7) % 7;
+      return aOffset - bOffset;
+    });
+  }, [hours, todayIndex]);
 
   return (
     <section id="opening-hours" className="bg-amber-50 px-4 py-20">
@@ -56,64 +75,68 @@ const OpeningHours: React.FC<OpeningHoursProps> = ({ locale, textLookup, hours }
         </motion.div>
 
         <div className="overflow-hidden rounded-[2rem] bg-white shadow-xl">
-          {hours.map((entry, index) => (
-            <div
-              key={entry.id}
-              className={`grid grid-cols-[1fr_auto] items-center gap-4 px-6 py-5 transition-colors ${
-                index === todayIndex ? 'bg-sky-50/70' : ''
-              } ${
-                index !== hours.length - 1 ? 'border-b border-stone-100' : ''
-              }`}
-            >
-              <div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className={`text-lg font-semibold ${index === todayIndex ? 'text-sky-900' : 'text-stone-900'}`}>
-                    {dayLabels[locale][entry.day] || entry.day}
+          {orderedHours.map((entry, index) => {
+            const isToday = entry.originalIndex === todayIndex;
+            const isEntryOpen = isToday ? openNow : entry.is_open;
+            return (
+              <div
+                key={entry.id}
+                className={`grid grid-cols-[1fr_auto] items-center gap-4 px-6 py-5 transition-colors ${
+                  isToday ? 'bg-sky-50/80' : ''
+                } ${index !== orderedHours.length - 1 ? 'border-b border-stone-100' : ''}`}
+              >
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className={`text-lg font-semibold ${isToday ? 'text-sky-900' : 'text-stone-900'}`}>
+                      {dayLabels[locale][entry.day] || entry.day}
+                    </div>
+                    <div
+                      className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
+                        isToday ? 'bg-sky-100 text-sky-700' : 'bg-stone-100 text-stone-500'
+                      }`}
+                    >
+                      {getWeekDateLabel(entry.originalIndex, locale)}
+                    </div>
+                    {isToday && (
+                      <div className="rounded-full bg-sky-600 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                        {locale === 'da' ? 'I dag' : locale === 'de' ? 'Heute' : 'Today'}
+                      </div>
+                    )}
                   </div>
-                  <div className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
-                    index === todayIndex ? 'bg-sky-100 text-sky-700' : 'bg-stone-100 text-stone-500'
-                  }`}>
-                    {getWeekDateLabel(index, locale)}
+                  {entry.special_message && <div className="mt-1 text-sm text-stone-500">{entry.special_message}</div>}
+                </div>
+                <div className="text-right">
+                  <div className="text-base font-semibold text-stone-900">
+                    {entry.is_unknown
+                      ? locale === 'da'
+                        ? 'Ukendt endnu'
+                        : locale === 'de'
+                          ? 'Noch unbekannt'
+                          : 'Unknown yet'
+                      : entry.is_open
+                        ? `${entry.open_time} - ${entry.close_time}`
+                        : '-'}
                   </div>
-                  {index === todayIndex && (
-                    <div className="rounded-full bg-sky-600 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                      {locale === 'da' ? 'I dag' : locale === 'de' ? 'Heute' : 'Today'}
+                  <div className={`text-sm ${isEntryOpen ? 'text-emerald-600' : 'text-rose-500'}`}>
+                    {entry.is_unknown
+                      ? locale === 'da'
+                        ? 'Afventer'
+                        : locale === 'de'
+                          ? 'Ausstehend'
+                          : 'Pending'
+                      : isEntryOpen
+                        ? translate(textLookup, locale, 'opening_open', 'Open')
+                        : translate(textLookup, locale, 'opening_closed', 'Closed')}
+                  </div>
+                  {!entry.is_unknown && entry.is_estimated !== false && (
+                    <div className="mt-1 text-xs text-stone-400">
+                      {locale === 'da' ? 'Estimeret' : locale === 'de' ? 'Geschätzt' : 'Estimated'}
                     </div>
                   )}
                 </div>
-                {entry.special_message && <div className="mt-1 text-sm text-stone-500">{entry.special_message}</div>}
               </div>
-              <div className="text-right">
-                <div className="text-base font-semibold text-stone-900">
-                  {entry.is_unknown
-                    ? locale === 'da'
-                      ? 'Ukendt endnu'
-                      : locale === 'de'
-                        ? 'Noch unbekannt'
-                        : 'Unknown yet'
-                    : entry.is_open
-                      ? `${entry.open_time} - ${entry.close_time}`
-                      : '-'}
-                </div>
-                <div className={`text-sm ${entry.is_open ? 'text-emerald-600' : 'text-rose-500'}`}>
-                  {entry.is_unknown
-                    ? locale === 'da'
-                      ? 'Afventer'
-                      : locale === 'de'
-                        ? 'Ausstehend'
-                        : 'Pending'
-                    : entry.is_open
-                      ? translate(textLookup, locale, 'opening_open', 'Open')
-                      : translate(textLookup, locale, 'opening_closed', 'Closed')}
-                </div>
-                {!entry.is_unknown && entry.is_estimated !== false && (
-                  <div className="mt-1 text-xs text-stone-400">
-                    {locale === 'da' ? 'Estimeret' : locale === 'de' ? 'Geschätzt' : 'Estimated'}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

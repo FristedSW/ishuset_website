@@ -202,6 +202,10 @@ export interface GiftCard {
   allow_email: boolean;
   allow_phone: boolean;
   status: string;
+  payment_status?: string;
+  stripe_session_id?: string;
+  stripe_payment_intent_id?: string;
+  email_sent?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -216,6 +220,22 @@ export interface GiftCardRequest {
   allow_email: boolean;
   allow_phone: boolean;
   message?: string;
+}
+
+export interface GiftCardCheckoutRequest extends GiftCardRequest {
+  locale: Locale;
+}
+
+export interface GiftCardCheckoutResponse {
+  checkout_url: string;
+  session_id: string;
+  gift_card_id: number;
+}
+
+export interface GiftCardCheckoutStatus {
+  payment_status: string;
+  status: string;
+  card: GiftCard;
 }
 
 export interface GiftCardUpdateRequest {
@@ -276,10 +296,31 @@ export interface FreezerBooking {
   start_date: string;
   end_date: string;
   notes?: string;
+  price?: string;
   status: string;
+  payment_status: 'paid' | 'unpaid';
   accepted_at: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface FreezerBookingCreateRequest {
+  customer_name: string;
+  customer_email: string;
+  customer_phone?: string;
+  occasion?: string;
+  freezer_size: 'small' | 'large';
+  start_date: string;
+  end_date: string;
+  notes?: string;
+  price?: string;
+  payment_status: 'paid' | 'unpaid';
+}
+
+export interface FreezerBookingUpdateRequest {
+  notes: string;
+  price: string;
+  payment_status: 'paid' | 'unpaid';
 }
 
 export interface AcceptContactRequest {
@@ -592,6 +633,23 @@ export const giftCardAPI = {
     });
     return handleResponse(response);
   },
+
+  createCheckoutSession: async (item: GiftCardCheckoutRequest): Promise<GiftCardCheckoutResponse> => {
+    const response = await fetch(`${API_BASE_URL}/gift-cards/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(item),
+    });
+    return handleResponse(response);
+  },
+
+  getCheckoutStatus: async (sessionId: string): Promise<GiftCardCheckoutStatus> => {
+    const params = new URLSearchParams({ session_id: sessionId });
+    const response = await fetch(`${API_BASE_URL}/gift-cards/checkout-status?${params.toString()}`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return handleResponse(response);
+  },
 };
 
 export const mediaAssetAPI = {
@@ -645,6 +703,24 @@ export const freezerBookingAPI = {
   getAll: async (): Promise<FreezerBooking[]> => {
     const response = await fetch(`${API_BASE_URL}/admin/freezer-bookings`, {
       headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  create: async (payload: FreezerBookingCreateRequest): Promise<FreezerBooking> => {
+    const response = await fetch(`${API_BASE_URL}/admin/freezer-bookings`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return handleResponse(response);
+  },
+
+  update: async (id: number, payload: FreezerBookingUpdateRequest): Promise<FreezerBooking> => {
+    const response = await fetch(`${API_BASE_URL}/admin/freezer-bookings/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
     });
     return handleResponse(response);
   },

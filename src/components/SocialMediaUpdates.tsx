@@ -8,10 +8,17 @@ interface SocialMediaUpdatesProps {
   textLookup: Record<string, Record<string, string>>;
 }
 
+function getInitialVisibleCount() {
+  if (typeof window === 'undefined') return 6;
+  return window.innerWidth >= 1024 ? 6 : 3;
+}
+
 export default function SocialMediaUpdates({ locale, textLookup }: SocialMediaUpdatesProps) {
   const [posts, setPosts] = useState<MediaPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<MediaPost | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [initialVisibleCount, setInitialVisibleCount] = useState(getInitialVisibleCount);
 
   useEffect(() => {
     mediaAPI
@@ -22,16 +29,29 @@ export default function SocialMediaUpdates({ locale, textLookup }: SocialMediaUp
           safeItems
             .filter((post) => post.is_published && post.is_featured)
             .sort((a, b) => new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime())
-            .slice(0, 3)
         );
       })
       .catch(() => setPosts([]))
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => setInitialVisibleCount(getInitialVisibleCount());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (loading || posts.length === 0) {
     return null;
   }
+
+  const visiblePosts = showAll ? posts : posts.slice(0, initialVisibleCount);
+  const toggleCopy =
+    locale === 'da'
+      ? { more: 'Se flere opdateringer', less: 'Vis færre opdateringer' }
+      : locale === 'de'
+        ? { more: 'Mehr Updates anzeigen', less: 'Weniger Updates anzeigen' }
+        : { more: 'See more updates', less: 'Show fewer updates' };
 
   return (
     <>
@@ -41,7 +61,7 @@ export default function SocialMediaUpdates({ locale, textLookup }: SocialMediaUp
             {translate(textLookup, locale, 'news_title', 'Nyheder og opdateringer')}
           </h2>
           <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {posts.map((post) => (
+            {visiblePosts.map((post) => (
               <article
                 key={post.id}
                 className={`group overflow-hidden rounded-[2rem] bg-white shadow-sm transition duration-200 ${
@@ -78,6 +98,17 @@ export default function SocialMediaUpdates({ locale, textLookup }: SocialMediaUp
               </article>
             ))}
           </div>
+          {posts.length > initialVisibleCount && (
+            <div className="mt-8 text-center">
+              <button
+                type="button"
+                onClick={() => setShowAll((current) => !current)}
+                className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-stone-700 shadow-sm"
+              >
+                {showAll ? toggleCopy.less : toggleCopy.more}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

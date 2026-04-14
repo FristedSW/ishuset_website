@@ -86,7 +86,7 @@ type Flavour struct {
 	NameDA        string    `json:"name_da" gorm:"not null"`
 	NameEN        string    `json:"name_en"`
 	NameDE        string    `json:"name_de"`
-	DescriptionDA string    `json:"description_da" gorm:"not null"`
+	DescriptionDA string    `json:"description_da"`
 	DescriptionEN string    `json:"description_en"`
 	DescriptionDE string    `json:"description_de"`
 	Category      string    `json:"category" gorm:"not null;default:'milk-based'"`
@@ -127,6 +127,10 @@ type GiftCard struct {
 	AllowEmail     bool      `json:"allow_email" gorm:"default:true"`
 	AllowPhone     bool      `json:"allow_phone" gorm:"default:false"`
 	Status         string    `json:"status" gorm:"default:'active'"`
+	PaymentStatus  string    `json:"payment_status" gorm:"default:'manual'"`
+	StripeSessionID string   `json:"stripe_session_id"`
+	StripePaymentIntentID string `json:"stripe_payment_intent_id"`
+	EmailSent      bool      `json:"email_sent" gorm:"default:false"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
@@ -169,7 +173,9 @@ type FreezerBooking struct {
 	StartDate        time.Time  `json:"start_date" gorm:"not null"`
 	EndDate          time.Time  `json:"end_date" gorm:"not null"`
 	Notes            string     `json:"notes"`
+	Price            string     `json:"price"`
 	Status           string     `json:"status" gorm:"default:'accepted'"`
+	PaymentStatus    string     `json:"payment_status" gorm:"default:'unpaid'"`
 	AcceptedAt       time.Time  `json:"accepted_at"`
 	CreatedAt        time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
@@ -249,7 +255,7 @@ type FlavourRequest struct {
 	NameDA        string `json:"name_da" validate:"required"`
 	NameEN        string `json:"name_en"`
 	NameDE        string `json:"name_de"`
-	DescriptionDA string `json:"description_da" validate:"required"`
+	DescriptionDA string `json:"description_da"`
 	DescriptionEN string `json:"description_en"`
 	DescriptionDE string `json:"description_de"`
 	Category      string `json:"category" validate:"required"`
@@ -283,6 +289,20 @@ type GiftCardRequest struct {
 	Message       string `json:"message"`
 }
 
+// GiftCardCheckoutRequest represents the public gift card checkout request before payment.
+type GiftCardCheckoutRequest struct {
+	Name           string `json:"name" validate:"required"`
+	Email          string `json:"email" validate:"required,email"`
+	Phone          string `json:"phone"`
+	RecipientName  string `json:"recipient_name" validate:"required"`
+	RecipientEmail string `json:"recipient_email" validate:"required,email"`
+	GiftAmount     string `json:"gift_amount" validate:"required"`
+	AllowEmail     bool   `json:"allow_email"`
+	AllowPhone     bool   `json:"allow_phone"`
+	Message        string `json:"message"`
+	Locale         string `json:"locale"`
+}
+
 // GiftCardUpdateRequest represents admin updates to a gift card.
 type GiftCardUpdateRequest struct {
 	BalanceAmount string `json:"balance_amount" validate:"required"`
@@ -314,4 +334,25 @@ type AcceptContactRequest struct {
 	StartDate   string `json:"start_date"`
 	EndDate     string `json:"end_date"`
 	FreezerSize string `json:"freezer_size"`
+}
+
+// FreezerBookingCreateRequest represents a manual admin-created freezer booking.
+type FreezerBookingCreateRequest struct {
+	CustomerName  string `json:"customer_name" validate:"required"`
+	CustomerEmail string `json:"customer_email" validate:"required,email"`
+	CustomerPhone string `json:"customer_phone"`
+	Occasion      string `json:"occasion"`
+	FreezerSize   string `json:"freezer_size" validate:"required"`
+	StartDate     string `json:"start_date" validate:"required"`
+	EndDate       string `json:"end_date" validate:"required"`
+	Notes         string `json:"notes"`
+	Price         string `json:"price"`
+	PaymentStatus string `json:"payment_status"`
+}
+
+// FreezerBookingUpdateRequest represents admin updates to a freezer booking.
+type FreezerBookingUpdateRequest struct {
+	Notes         string `json:"notes"`
+	Price         string `json:"price"`
+	PaymentStatus string `json:"payment_status"`
 }

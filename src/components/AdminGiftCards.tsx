@@ -198,6 +198,7 @@ function GiftCardRow({ card, onUpdated }: { card: GiftCard; onUpdated: () => voi
         </div>
         <div className="text-right text-sm text-stone-500">
           <div>Original: {card.original_amount}</div>
+          <div>Payment: {card.payment_status || 'manual'}</div>
           <div>Created: {new Date(card.created_at).toLocaleDateString()}</div>
         </div>
       </div>

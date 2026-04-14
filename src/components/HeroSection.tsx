@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock3, MapPin, Phone } from 'lucide-react';
-import { getTodayHours, translate } from '../lib/site';
+import { getTodayHours, isCurrentlyOpen, translate } from '../lib/site';
 import { Locale, OpeningHours } from '../services/api';
 
 interface HeroSectionProps {
@@ -12,7 +12,7 @@ interface HeroSectionProps {
 
 const HeroSection: React.FC<HeroSectionProps> = ({ locale, textLookup, hours }) => {
   const today = getTodayHours(hours);
-  const isOpen = today?.is_open ?? true;
+  const isOpen = isCurrentlyOpen(hours);
 
   const scrollTo = (id: string) => {
     document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -62,7 +62,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ locale, textLookup, hours }) 
             </div>
             <div className="rounded-[2rem] bg-white p-6 shadow-sm">
               <Clock3 className="mb-3 h-5 w-5 text-stone-900" />
-              <div className="text-sm font-semibold text-stone-900">{today?.is_open ? `${today.open_time} - ${today.close_time}` : '-'}</div>
+              <div className="text-sm font-semibold text-stone-900">
+                {today?.is_open && !today?.is_unknown ? `${today.open_time} - ${today.close_time}` : '-'}
+              </div>
               <div className="text-sm text-stone-500">{today?.special_message || ''}</div>
             </div>
           </div>

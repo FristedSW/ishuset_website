@@ -35,11 +35,7 @@ export default function AdminOpeningHours() {
     try {
       const data = await openingHoursAPI.getAll();
       setHours(data);
-      setDrafts(
-        Object.fromEntries(
-          data.map((day) => [day.id, toRequest(day)])
-        )
-      );
+      setDrafts(Object.fromEntries(data.map((day) => [day.id, toRequest(day)])));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -64,7 +60,7 @@ export default function AdminOpeningHours() {
     return dirty;
   }, [drafts, hours]);
 
-  const handleChange = (id: number, field: keyof OpeningHoursRequest, value: any) => {
+  const handleChange = (id: number, field: keyof OpeningHoursRequest, value: string | boolean) => {
     setDrafts((current) => {
       const existing = current[id];
       if (!existing) return current;
@@ -108,122 +104,111 @@ export default function AdminOpeningHours() {
   };
 
   if (loading) {
-    return <div>Indlæser...</div>;
+    return <div className="text-sm text-stone-500">Loading opening hours...</div>;
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Åbningstider</h2>
-      {error && <div className="text-red-600 mb-4">{error}</div>}
-
-      <div className="bg-white rounded shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dag</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Åben</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Åbningstid</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lukketid</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukendt</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estimeret</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Særlig besked</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Handling</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {hours.map((day) => {
-              const draft = drafts[day.id];
-              if (!draft) return null;
-
-              return (
-                <tr key={day.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {days.find((d) => d.key === day.day)?.label || day.day}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      checked={draft.is_open}
-                      onChange={(e) => handleChange(day.id, 'is_open', e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="time"
-                      value={draft.open_time}
-                      onChange={(e) => handleChange(day.id, 'open_time', e.target.value)}
-                      disabled={!draft.is_open || draft.is_unknown}
-                      className="border rounded px-2 py-1 text-sm disabled:bg-gray-100"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="time"
-                      value={draft.close_time}
-                      onChange={(e) => handleChange(day.id, 'close_time', e.target.value)}
-                      disabled={!draft.is_open || draft.is_unknown}
-                      className="border rounded px-2 py-1 text-sm disabled:bg-gray-100"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      checked={!!draft.is_unknown}
-                      onChange={(e) => handleChange(day.id, 'is_unknown', e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      checked={draft.is_estimated !== false}
-                      onChange={(e) => handleChange(day.id, 'is_estimated', e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4">
-                    <input
-                      type="text"
-                      value={draft.special_message || ''}
-                      onChange={(e) => handleChange(day.id, 'special_message', e.target.value)}
-                      placeholder="F.eks. 'Kun takeaway'"
-                      className="border rounded px-2 py-1 text-sm w-full"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleSave(day.id)}
-                        disabled={!dirtyRows.has(day.id) || saving === day.id}
-                        className="rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        {saving === day.id ? 'Gemmer' : 'Gem'}
-                      </button>
-                      <button
-                        onClick={() => handleReset(day.id)}
-                        disabled={!dirtyRows.has(day.id) || saving === day.id}
-                        className="rounded-full border border-stone-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone-600 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Nulstil
-                      </button>
-                    </div>
-                    {dirtyRows.has(day.id) && (
-                      <div className="mt-2 text-xs text-amber-600">Ikke gemt</div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+    <div className="space-y-6">
+      <div>
+        <h2 className="font-serif text-3xl font-bold text-stone-900">Opening hours</h2>
+        <p className="mt-2 text-sm text-stone-500">Adjust each weekday and save rows only when you are ready.</p>
       </div>
 
-      {saving !== null && (
-        <div className="mt-4 text-sm text-gray-600">Gemmer ændringer...</div>
-      )}
+      {error && <div className="rounded-[1.5rem] bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div>}
+
+      <div className="space-y-4">
+        {hours.map((day) => {
+          const draft = drafts[day.id];
+          if (!draft) return null;
+
+          return (
+            <div key={day.id} className="rounded-[2rem] bg-white p-6 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-stone-400">Weekday</div>
+                  <h3 className="mt-1 text-2xl font-semibold text-stone-900">
+                    {days.find((d) => d.key === day.day)?.label || day.day}
+                  </h3>
+                </div>
+                {dirtyRows.has(day.id) && (
+                  <div className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
+                    Not saved
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <label className="space-y-2 text-sm font-medium text-stone-700">
+                  <span>Open time</span>
+                  <input
+                    type="time"
+                    value={draft.open_time}
+                    onChange={(e) => handleChange(day.id, 'open_time', e.target.value)}
+                    disabled={!draft.is_open || !!draft.is_unknown}
+                    className="w-full rounded-2xl border border-stone-200 px-4 py-3 disabled:bg-stone-100"
+                  />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-stone-700">
+                  <span>Close time</span>
+                  <input
+                    type="time"
+                    value={draft.close_time}
+                    onChange={(e) => handleChange(day.id, 'close_time', e.target.value)}
+                    disabled={!draft.is_open || !!draft.is_unknown}
+                    className="w-full rounded-2xl border border-stone-200 px-4 py-3 disabled:bg-stone-100"
+                  />
+                </label>
+                <label className="flex items-center gap-3 rounded-[1.5rem] bg-stone-50 px-4 py-3 text-sm font-medium text-stone-700">
+                  <input type="checkbox" checked={draft.is_open} onChange={(e) => handleChange(day.id, 'is_open', e.target.checked)} />
+                  Open this day
+                </label>
+                <label className="flex items-center gap-3 rounded-[1.5rem] bg-stone-50 px-4 py-3 text-sm font-medium text-stone-700">
+                  <input type="checkbox" checked={!!draft.is_unknown} onChange={(e) => handleChange(day.id, 'is_unknown', e.target.checked)} />
+                  Unknown for now
+                </label>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-[auto_1fr]">
+                <label className="flex items-center gap-3 rounded-[1.5rem] bg-stone-50 px-4 py-3 text-sm font-medium text-stone-700">
+                  <input
+                    type="checkbox"
+                    checked={draft.is_estimated !== false}
+                    onChange={(e) => handleChange(day.id, 'is_estimated', e.target.checked)}
+                  />
+                  Mark as estimated
+                </label>
+                <label className="space-y-2 text-sm font-medium text-stone-700">
+                  <span>Special message</span>
+                  <input
+                    type="text"
+                    value={draft.special_message || ''}
+                    onChange={(e) => handleChange(day.id, 'special_message', e.target.value)}
+                    placeholder="For example: only takeaway"
+                    className="w-full rounded-2xl border border-stone-200 px-4 py-3"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button
+                  onClick={() => handleSave(day.id)}
+                  disabled={!dirtyRows.has(day.id) || saving === day.id}
+                  className="rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {saving === day.id ? 'Saving' : 'Save'}
+                </button>
+                <button
+                  onClick={() => handleReset(day.id)}
+                  disabled={!dirtyRows.has(day.id) || saving === day.id}
+                  className="rounded-full border border-stone-300 px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-stone-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
