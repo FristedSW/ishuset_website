@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -236,7 +237,11 @@ func CreateGiftCardCheckoutSession(c *fiber.Ctx) error {
 			"payment_status": "failed",
 			"status":         "cancelled",
 		}).Error
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to create Stripe checkout session"})
+		log.Printf("Stripe checkout session creation failed: %v", err)
+		return c.Status(500).JSON(fiber.Map{
+			"error":  "Failed to create Stripe checkout session",
+			"detail": err.Error(),
+		})
 	}
 
 	if err := config.DB.Model(&card).Updates(map[string]interface{}{
