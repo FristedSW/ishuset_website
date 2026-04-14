@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { mediaAssetAPI, MediaAsset, MediaAssetRequest } from '../services/api';
+import { mediaAssetAPI, MediaAsset, MediaAssetRequest, resolveMediaUrl } from '../services/api';
 
 const emptyForm: MediaAssetRequest = {
   title: '',
@@ -224,7 +224,7 @@ export default function AdminMediaLibrary() {
         {assets.map((asset) => (
           <div key={asset.id} className="rounded-[2rem] bg-white p-5 shadow-sm">
             <div className="overflow-hidden rounded-[1.5rem] bg-stone-100">
-              <img src={asset.file_url} alt={asset.alt_text || asset.title} className="h-56 w-full object-cover" />
+              <img src={resolveMediaUrl(asset.file_url)} alt={asset.alt_text || asset.title} className="h-56 w-full object-cover" />
             </div>
             <div className="mt-4 flex items-start justify-between gap-4">
               <div>
@@ -234,14 +234,14 @@ export default function AdminMediaLibrary() {
               </div>
             </div>
             <div className="mt-4 rounded-[1.25rem] bg-stone-50 px-4 py-3 text-sm text-stone-600 break-all">
-              {asset.file_url}
+              {resolveMediaUrl(asset.file_url)}
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               <button
-                onClick={() => handleCopy(asset.file_url)}
+                onClick={() => handleCopy(resolveMediaUrl(asset.file_url))}
                 className="rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700"
               >
-                {copiedUrl === asset.file_url ? 'Copied' : 'Copy URL'}
+                {copiedUrl === resolveMediaUrl(asset.file_url) ? 'Copied' : 'Copy URL'}
               </button>
               <button
                 onClick={() => handleEdit(asset)}

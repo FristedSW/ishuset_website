@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
-import { galleryAPI, GalleryItem as GalleryItemType, Locale } from '../services/api';
+import { galleryAPI, GalleryItem as GalleryItemType, Locale, resolveMediaUrl } from '../services/api';
 import { translate } from '../lib/site';
 
 interface GalleryProps {
@@ -81,7 +81,7 @@ export default function Gallery({ locale, textLookup }: GalleryProps) {
                 className="absolute inset-0"
               >
                 <img
-                  src={currentItem.image_url}
+                  src={resolveMediaUrl(currentItem.image_url)}
                   alt={currentItem.alt_text || currentItem.title}
                   className="h-full w-full object-cover"
                 />
@@ -144,7 +144,7 @@ export default function Gallery({ locale, textLookup }: GalleryProps) {
                 }`}
               >
                 {item.image_url ? (
-                  <img src={item.image_url} alt={item.alt_text || item.title} className="h-full w-full object-cover" />
+                  <img src={resolveMediaUrl(item.image_url)} alt={item.alt_text || item.title} className="h-full w-full object-cover object-top" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sky-100 to-cyan-50">
                     <ImageIcon className="h-6 w-6 text-stone-900" />

@@ -42,15 +42,8 @@ func UploadMediaFile(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to save uploaded file"})
 	}
 
-	scheme := c.Protocol()
-	host := c.Hostname()
-	port := c.Port()
-	if port != "" && port != "80" && port != "443" && !strings.Contains(host, ":") {
-		host = host + ":" + port
-	}
-
 	return c.JSON(fiber.Map{
-		"file_url": fmt.Sprintf("%s://%s/uploads/%s", scheme, host, filename),
+		"file_url": fmt.Sprintf("/uploads/%s", filename),
 		"filename": filename,
 	})
 }

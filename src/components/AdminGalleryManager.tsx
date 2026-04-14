@@ -5,6 +5,7 @@ import {
   GalleryItemRequest,
   MediaAsset,
   mediaAssetAPI,
+  resolveMediaUrl,
 } from '../services/api';
 
 const emptyForm: GalleryItemRequest = {
@@ -187,7 +188,7 @@ export default function AdminGalleryManager() {
         {items.map((item) => (
           <div key={item.id} className="rounded-[2rem] bg-white p-5 shadow-sm">
             <div className="overflow-hidden rounded-[1.5rem] bg-stone-100">
-              <img src={item.image_url} alt={item.alt_text || item.title} className="h-56 w-full object-cover" />
+              <img src={resolveMediaUrl(item.image_url)} alt={item.alt_text || item.title} className="h-56 w-full object-cover" />
             </div>
             <div className="mt-4 flex items-start justify-between gap-4">
               <div>

@@ -350,11 +350,18 @@ export const resolveMediaUrl = (value?: string) => {
   const trimmed = value.trim();
   if (!trimmed) return '';
   if (
-    trimmed.startsWith('http://') ||
-    trimmed.startsWith('https://') ||
     trimmed.startsWith('data:') ||
     trimmed.startsWith('blob:')
   ) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('http://')) {
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      return trimmed.replace(/^http:\/\//i, 'https://');
+    }
     return trimmed;
   }
   if (trimmed.startsWith('/')) {
