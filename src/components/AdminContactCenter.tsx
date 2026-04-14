@@ -296,9 +296,6 @@ export default function AdminContactCenter() {
         </button>
       </div>
 
-      {loading && <div className="text-sm text-stone-500">Loading freezer bookings...</div>}
-      {!loading && <FreezerCalendarGrid bookings={bookings} />}
-
       <div className="space-y-4">
         {filteredMessages.map((message) => {
           const freezerRequest = isFreezerRequest(message);
@@ -420,6 +417,9 @@ export default function AdminContactCenter() {
           );
         })}
       </div>
+
+      {loading && <div className="text-sm text-stone-500">Loading freezer bookings...</div>}
+      {!loading && <FreezerCalendarGrid bookings={bookings} />}
     </div>
   );
 }

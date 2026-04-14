@@ -29,6 +29,8 @@ export default function AdminOpeningHours() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<number | null>(null);
+  const todayJs = new Date().getDay();
+  const todayIndex = todayJs === 0 ? 6 : todayJs - 1;
 
   const fetchHours = async () => {
     setLoading(true);
@@ -59,6 +61,16 @@ export default function AdminOpeningHours() {
     }
     return dirty;
   }, [drafts, hours]);
+
+  const orderedHours = useMemo(() => {
+    return [...hours].sort((a, b) => {
+      const aIndex = days.findIndex((day) => day.key === a.day);
+      const bIndex = days.findIndex((day) => day.key === b.day);
+      const aOffset = (aIndex - todayIndex + 7) % 7;
+      const bOffset = (bIndex - todayIndex + 7) % 7;
+      return aOffset - bOffset;
+    });
+  }, [hours, todayIndex]);
 
   const handleChange = (id: number, field: keyof OpeningHoursRequest, value: string | boolean) => {
     setDrafts((current) => {
@@ -117,7 +129,7 @@ export default function AdminOpeningHours() {
       {error && <div className="rounded-[1.5rem] bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div>}
 
       <div className="space-y-4">
-        {hours.map((day) => {
+        {orderedHours.map((day) => {
           const draft = drafts[day.id];
           if (!draft) return null;
 

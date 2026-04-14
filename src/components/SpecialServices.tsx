@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Snowflake } from 'lucide-react';
+import { CalendarDays, Snowflake } from 'lucide-react';
 import { formCopy, translate } from '../lib/site';
 import { contactAPI, Locale } from '../services/api';
 
@@ -10,7 +10,7 @@ interface SpecialServicesProps {
 }
 
 const freezerOccasionOptions = {
-  da: ['Fødselsdag', 'Firmaevent', 'Bryllup', 'Andet'],
+  da: ['Foedselsdag', 'Firmaevent', 'Bryllup', 'Andet'],
   en: ['Birthday', 'Company event', 'Wedding', 'Other'],
   de: ['Geburtstag', 'Firmenevent', 'Hochzeit', 'Sonstiges'],
 };
@@ -25,8 +25,8 @@ const priceEstimates = {
     { label: 'Large freezer', value: 'From 1,600 DKK / day' },
   ],
   de: [
-    { label: 'Kleine Kühltruhe', value: 'Ab 800 DKK / Tag' },
-    { label: 'Große Kühltruhe', value: 'Ab 1.600 DKK / Tag' },
+    { label: 'Kleine Kuehltruhe', value: 'Ab 800 DKK / Tag' },
+    { label: 'Grosse Kuehltruhe', value: 'Ab 1.600 DKK / Tag' },
   ],
 };
 
@@ -45,21 +45,14 @@ const emptyFreezerForm = {
 
 const FORMSPREE_REQUEST_URL = process.env.REACT_APP_FORMSPREE_REQUEST_URL || '';
 
-function parseDanishDate(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return '';
-  const match = trimmed.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
-  if (!match) return '';
-  const [, day, month, year] = match;
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-}
-
 const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup }) => {
   const copy = formCopy[locale];
   const [freezerForm, setFreezerForm] = useState(emptyFreezerForm);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fromDateRef = useRef<HTMLInputElement | null>(null);
+  const toDateRef = useRef<HTMLInputElement | null>(null);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -81,20 +74,12 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
       return;
     }
 
-    const preferredFrom = parseDanishDate(freezerForm.preferred_from);
-    const preferredTo = parseDanishDate(freezerForm.preferred_to);
-
-    if ((freezerForm.preferred_from && !preferredFrom) || (freezerForm.preferred_to && !preferredTo)) {
-      setError(locale === 'da' ? 'Brug formatet dd/mm/yyyy.' : locale === 'de' ? 'Bitte Format dd/mm/yyyy verwenden.' : 'Please use dd/mm/yyyy format.');
-      return;
-    }
-
     setSubmitting(true);
     try {
       const payload = {
         ...freezerForm,
-        preferred_from: preferredFrom || undefined,
-        preferred_to: preferredTo || undefined,
+        preferred_from: freezerForm.preferred_from || undefined,
+        preferred_to: freezerForm.preferred_to || undefined,
         guest_count: freezerForm.guest_count || undefined,
       };
 
@@ -142,7 +127,7 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
         <div className="space-y-8">
           <div className="rounded-[2rem] bg-white p-6 shadow-sm">
             <h3 className="text-2xl font-semibold text-stone-900">
-              {locale === 'da' ? 'Prisoverslag' : locale === 'de' ? 'Preisübersicht' : 'Estimated pricing'}
+              {locale === 'da' ? 'Prisoverslag' : locale === 'de' ? 'Preisuebersicht' : 'Estimated pricing'}
             </h3>
             <div className="mt-5 space-y-3">
               {priceEstimates[locale].map((item) => (
@@ -160,9 +145,9 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
             </h3>
             <p className="mt-3 text-sm leading-7 text-stone-500">
               {locale === 'da'
-                ? 'Send en generel forespørgsel med datoer og arrangement. Vi vælger selv lille eller stor fryser i admin.'
+                ? 'Send en generel forespoergsel med datoer og arrangement. Vi vaelger selv lille eller stor fryser i admin.'
                 : locale === 'de'
-                  ? 'Senden Sie eine allgemeine Anfrage mit Datum und Anlass. Im Adminbereich wählen wir dann selbst kleine oder große Kühltruhe.'
+                  ? 'Senden Sie eine allgemeine Anfrage mit Datum und Anlass. Im Adminbereich waehlen wir dann selbst kleine oder grosse Kuehltruhe.'
                   : 'Send a general request with dates and event details. We will choose the small or large freezer in the admin panel.'}
             </p>
 
@@ -199,25 +184,47 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2 text-sm font-medium">
                   <span>{locale === 'da' ? 'Fra dato' : locale === 'de' ? 'Von Datum' : 'From date'}</span>
-                  <input
-                    type="text"
-                    name="preferred_from"
-                    value={freezerForm.preferred_from}
-                    onChange={handleChange}
-                    placeholder="dd/mm/yyyy"
-                    className="w-full rounded-2xl border border-stone-200 px-4 py-3"
-                  />
+                  <div className="relative">
+                    <input
+                      ref={fromDateRef}
+                      type="date"
+                      lang="en-GB"
+                      name="preferred_from"
+                      value={freezerForm.preferred_from}
+                      onChange={handleChange}
+                      className="w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fromDateRef.current?.showPicker?.()}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-stone-100 p-2 text-stone-600"
+                      aria-label="Open from date picker"
+                    >
+                      <CalendarDays className="h-4 w-4" />
+                    </button>
+                  </div>
                 </label>
                 <label className="space-y-2 text-sm font-medium">
                   <span>{locale === 'da' ? 'Til dato' : locale === 'de' ? 'Bis Datum' : 'To date'}</span>
-                  <input
-                    type="text"
-                    name="preferred_to"
-                    value={freezerForm.preferred_to}
-                    onChange={handleChange}
-                    placeholder="dd/mm/yyyy"
-                    className="w-full rounded-2xl border border-stone-200 px-4 py-3"
-                  />
+                  <div className="relative">
+                    <input
+                      ref={toDateRef}
+                      type="date"
+                      lang="en-GB"
+                      name="preferred_to"
+                      value={freezerForm.preferred_to}
+                      onChange={handleChange}
+                      className="w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => toDateRef.current?.showPicker?.()}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-stone-100 p-2 text-stone-600"
+                      aria-label="Open to date picker"
+                    >
+                      <CalendarDays className="h-4 w-4" />
+                    </button>
+                  </div>
                 </label>
               </div>
 

@@ -24,6 +24,7 @@ const emptyGiftCardForm = {
 const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup }) => {
   const copy = formCopy[locale];
   const [form, setForm] = useState(emptyGiftCardForm);
+  const [sendToOtherRecipient, setSendToOtherRecipient] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +49,11 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
 
     setSubmitting(true);
     try {
-      const response = await giftCardAPI.createCheckoutSession({ ...form, locale });
+      const response = await giftCardAPI.createCheckoutSession({
+        ...form,
+        recipient_email: sendToOtherRecipient ? form.recipient_email : form.email,
+        locale,
+      });
       setFeedback(
         locale === 'da'
           ? 'Du bliver sendt videre til betaling...'
@@ -81,9 +86,9 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
           </div>
           <p className="max-w-3xl text-lg leading-8 text-stone-600">
             {locale === 'da'
-              ? 'Betal gavekortet online med kort eller MobilePay. Gavekortet bliver sendt til modtageren, når betalingen er gennemført.'
+              ? 'Betal gavekortet online med kort eller MobilePay. Gavekortet bliver sendt til modtageren, naar betalingen er gennemfoert.'
               : locale === 'de'
-                ? 'Bezahlen Sie den Gutschein online mit Karte oder MobilePay. Der Gutschein wird nach erfolgreicher Zahlung an den Empfänger gesendet.'
+                ? 'Bezahlen Sie den Gutschein online mit Karte oder MobilePay. Der Gutschein wird nach erfolgreicher Zahlung an den Empfaenger gesendet.'
                 : 'Pay for the gift card online with card or MobilePay. The gift card will be sent to the recipient after payment is completed.'}
           </p>
         </motion.div>
@@ -107,18 +112,51 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
                 <input name="phone" value={form.phone} onChange={handleChange} className="w-full rounded-2xl border border-stone-200 px-4 py-3" />
               </label>
               <label className="space-y-2 text-sm font-medium">
-                <span>{locale === 'da' ? 'Modtagernavn' : locale === 'de' ? 'Empfängername' : 'Recipient name'}</span>
+                <span>{locale === 'da' ? 'Modtagernavn' : locale === 'de' ? 'Empfaengername' : 'Recipient name'}</span>
                 <input name="recipient_name" value={form.recipient_name} onChange={handleChange} required className="w-full rounded-2xl border border-stone-200 px-4 py-3" />
               </label>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-2 text-sm font-medium">
-                <span>{locale === 'da' ? 'Modtager-email' : locale === 'de' ? 'Empfänger-E-Mail' : 'Recipient email'}</span>
-                <input type="email" name="recipient_email" value={form.recipient_email} onChange={handleChange} required className="w-full rounded-2xl border border-stone-200 px-4 py-3" />
+            <div className="rounded-[1.5rem] bg-amber-50 p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={sendToOtherRecipient}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setSendToOtherRecipient(checked);
+                    if (!checked) {
+                      setForm((current) => ({ ...current, recipient_email: current.email }));
+                    }
+                  }}
+                />
+                <span>
+                  {locale === 'da'
+                    ? 'Skal gavekortet sendes til en anden modtager?'
+                    : locale === 'de'
+                      ? 'Soll der Gutschein an einen anderen Empfaenger gesendet werden?'
+                      : 'Should the gift card be sent to another recipient?'}
+                </span>
               </label>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {sendToOtherRecipient ? (
+                <label className="space-y-2 text-sm font-medium">
+                  <span>{locale === 'da' ? 'Modtager-email' : locale === 'de' ? 'Empfaenger-E-Mail' : 'Recipient email'}</span>
+                  <input type="email" name="recipient_email" value={form.recipient_email} onChange={handleChange} required className="w-full rounded-2xl border border-stone-200 px-4 py-3" />
+                </label>
+              ) : (
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
+                  {locale === 'da'
+                    ? `Gavekortet sendes til koeberens email: ${form.email || '-'}`
+                    : locale === 'de'
+                      ? `Der Gutschein wird an die E-Mail des Kaeufers gesendet: ${form.email || '-'}`
+                      : `The gift card will be sent to the buyer's email: ${form.email || '-'}`}
+                </div>
+              )}
               <label className="space-y-2 text-sm font-medium">
-                <span>{locale === 'da' ? 'Beløb' : locale === 'de' ? 'Betrag' : 'Amount'}</span>
+                <span>{locale === 'da' ? 'Beloeb' : locale === 'de' ? 'Betrag' : 'Amount'}</span>
                 <input name="gift_amount" value={form.gift_amount} onChange={handleChange} required placeholder="100 kr" className="w-full rounded-2xl border border-stone-200 px-4 py-3" />
               </label>
             </div>
@@ -143,7 +181,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ locale, textLookup })
             {feedback && <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{feedback}</div>}
 
             <button type="submit" disabled={submitting} className="w-full rounded-full bg-stone-900 px-6 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-70">
-              {submitting ? '...' : locale === 'da' ? 'Gå til betaling' : locale === 'de' ? 'Zur Zahlung' : 'Go to payment'}
+              {submitting ? '...' : locale === 'da' ? 'Gaa til betaling' : locale === 'de' ? 'Zur Zahlung' : 'Go to payment'}
             </button>
           </form>
         </div>

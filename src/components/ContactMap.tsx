@@ -79,7 +79,7 @@ const ContactMap: React.FC<ContactMapProps> = ({ locale, textLookup, hours }) =>
             </div>
           </div>
 
-          <div className="rounded-[2rem] bg-amber-50 p-8 shadow-sm">
+          <div className="rounded-[2rem] border border-stone-200 bg-amber-50 p-8 shadow-sm">
             <div className="text-xs uppercase tracking-[0.3em] text-stone-500">Today</div>
             <div className="mt-3 text-2xl font-semibold text-stone-900">
               {today?.is_open && !today?.is_unknown

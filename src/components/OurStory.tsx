@@ -114,9 +114,9 @@ const OurStory: React.FC<OurStoryProps> = ({ locale, textLookup }) => {
                         initial={{ opacity: 0, x: -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        className="rounded-[2rem] bg-gradient-to-br from-rose-200 via-rose-100 to-pink-50 p-8 text-stone-900 shadow-xl ring-1 ring-rose-300/70"
+                        className="rounded-[2rem] bg-stone-950 p-8 text-white shadow-xl"
                     >
-                        <div className="text-xs uppercase tracking-[0.4em] text-rose-600">
+                        <div className="text-xs uppercase tracking-[0.4em] text-amber-300">
                             Ishuset
                         </div>
                         <h3 className="mt-4 font-serif text-3xl">
@@ -127,7 +127,7 @@ const OurStory: React.FC<OurStoryProps> = ({ locale, textLookup }) => {
                                 "Homemade with care",
                             )}
                         </h3>
-                        <div className="mt-6 space-y-4 text-base leading-8 text-stone-700">
+                        <div className="mt-6 space-y-4 text-base leading-8 text-stone-200">
                             <p>
                                 {translate(
                                     textLookup,

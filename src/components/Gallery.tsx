@@ -83,7 +83,7 @@ export default function Gallery({ locale, textLookup }: GalleryProps) {
                 <img
                   src={resolveMediaUrl(currentItem.image_url)}
                   alt={currentItem.alt_text || currentItem.title}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover object-top"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-950/80 via-stone-950/30 to-transparent p-6 text-white">
                   <h3 className="text-2xl font-bold">{currentItem.title}</h3>
@@ -140,7 +140,7 @@ export default function Gallery({ locale, textLookup }: GalleryProps) {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className={`h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl transition-all ${
-                  index === currentIndex ? 'ring-4 ring-sky-500' : 'ring-2 ring-stone-200 hover:ring-sky-300'
+                  index === currentIndex ? 'ring-2 ring-sky-300' : 'ring-1 ring-stone-100 hover:ring-sky-200'
                 }`}
               >
                 {item.image_url ? (
