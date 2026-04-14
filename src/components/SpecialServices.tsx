@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CalendarDays, Snowflake } from 'lucide-react';
+import { Snowflake } from 'lucide-react';
 import { formCopy, translate } from '../lib/site';
 import { contactAPI, Locale } from '../services/api';
 
@@ -51,8 +51,6 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const fromDateRef = useRef<HTMLInputElement | null>(null);
-  const toDateRef = useRef<HTMLInputElement | null>(null);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -184,47 +182,25 @@ const SpecialServices: React.FC<SpecialServicesProps> = ({ locale, textLookup })
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2 text-sm font-medium">
                   <span>{locale === 'da' ? 'Fra dato' : locale === 'de' ? 'Von Datum' : 'From date'}</span>
-                  <div className="relative">
-                    <input
-                      ref={fromDateRef}
-                      type="date"
-                      lang="en-GB"
-                      name="preferred_from"
-                      value={freezerForm.preferred_from}
-                      onChange={handleChange}
-                      className="hide-native-date-icon w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fromDateRef.current?.showPicker?.()}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-stone-100 p-2 text-stone-600"
-                      aria-label="Open from date picker"
-                    >
-                      <CalendarDays className="h-4 w-4" />
-                    </button>
-                  </div>
+                  <input
+                    type="date"
+                    lang="en-GB"
+                    name="preferred_from"
+                    value={freezerForm.preferred_from}
+                    onChange={handleChange}
+                    className="w-full rounded-2xl border border-stone-200 px-4 py-3"
+                  />
                 </label>
                 <label className="space-y-2 text-sm font-medium">
                   <span>{locale === 'da' ? 'Til dato' : locale === 'de' ? 'Bis Datum' : 'To date'}</span>
-                  <div className="relative">
-                    <input
-                      ref={toDateRef}
-                      type="date"
-                      lang="en-GB"
-                      name="preferred_to"
-                      value={freezerForm.preferred_to}
-                      onChange={handleChange}
-                      className="hide-native-date-icon w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toDateRef.current?.showPicker?.()}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-stone-100 p-2 text-stone-600"
-                      aria-label="Open to date picker"
-                    >
-                      <CalendarDays className="h-4 w-4" />
-                    </button>
-                  </div>
+                  <input
+                    type="date"
+                    lang="en-GB"
+                    name="preferred_to"
+                    value={freezerForm.preferred_to}
+                    onChange={handleChange}
+                    className="w-full rounded-2xl border border-stone-200 px-4 py-3"
+                  />
                 </label>
               </div>
 

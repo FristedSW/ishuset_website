@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   contactAdminAPI,
   contactAPI,
@@ -63,8 +62,6 @@ export default function AdminContactCenter() {
   const [showManualBooking, setShowManualBooking] = useState(false);
   const [manualBooking, setManualBooking] = useState(emptyManualBooking);
   const [savingManualBooking, setSavingManualBooking] = useState(false);
-  const startDateRef = useRef<HTMLInputElement | null>(null);
-  const endDateRef = useRef<HTMLInputElement | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -200,43 +197,25 @@ export default function AdminContactCenter() {
                 placeholder="Occasion"
                 className="rounded-2xl border border-stone-200 px-4 py-3"
               />
-              <label className="relative block">
+              <label className="block">
                 <input
-                  ref={startDateRef}
                   type="date"
                   lang="en-GB"
                   value={manualBooking.start_date}
                   onChange={(e) => setManualBooking((current) => ({ ...current, start_date: e.target.value }))}
-                  className="hide-native-date-icon w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
+                  className="w-full rounded-2xl border border-stone-200 px-4 py-3"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => startDateRef.current?.showPicker?.()}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-stone-100 p-2 text-stone-600"
-                  aria-label="Open start date picker"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                </button>
               </label>
-              <label className="relative block">
+              <label className="block">
                 <input
-                  ref={endDateRef}
                   type="date"
                   lang="en-GB"
                   value={manualBooking.end_date}
                   onChange={(e) => setManualBooking((current) => ({ ...current, end_date: e.target.value }))}
-                  className="hide-native-date-icon w-full rounded-2xl border border-stone-200 px-4 py-3 pr-12"
+                  className="w-full rounded-2xl border border-stone-200 px-4 py-3"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => endDateRef.current?.showPicker?.()}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-stone-100 p-2 text-stone-600"
-                  aria-label="Open end date picker"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                </button>
               </label>
               <input
                 value={manualBooking.price}
