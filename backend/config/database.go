@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"ishuset-backend/models"
@@ -17,7 +18,12 @@ var DB *gorm.DB
 // InitDB initializes the database connection.
 func InitDB() {
 	var err error
-	DB, err = gorm.Open(sqlite.Open("ishuset.db"), &gorm.Config{
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "ishuset.db"
+	}
+
+	DB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {

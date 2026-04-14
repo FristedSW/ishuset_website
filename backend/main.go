@@ -13,7 +13,6 @@ import (
 func main() {
 	// Initialize databases
 	config.InitDB()
-	config.InitMongo()
 
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
@@ -21,7 +20,11 @@ func main() {
 		AllowHeaders:  "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:  "GET,POST,PUT,PATCH,DELETE,OPTIONS",
 	}))
-	app.Static("/uploads", "./uploads")
+	uploadsDir := os.Getenv("UPLOADS_DIR")
+	if uploadsDir == "" {
+		uploadsDir = "./uploads"
+	}
+	app.Static("/uploads", uploadsDir)
 
 	// Public routes
 	app.Post("/api/login", handlers.Login)

@@ -95,7 +95,7 @@ func DeleteMediaAsset(c *fiber.Ctx) error {
 	}
 	if asset.Source == "local" && strings.Contains(asset.FileURL, "/uploads/") {
 		filename := filepath.Base(asset.FileURL)
-		_ = os.Remove(filepath.Join("uploads", filename))
+		_ = os.Remove(filepath.Join(uploadsDir(), filename))
 	}
 	return c.JSON(fiber.Map{"message": "Media asset deleted successfully"})
 }
